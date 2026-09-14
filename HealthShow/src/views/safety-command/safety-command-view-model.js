@@ -1,11 +1,81 @@
 const DONUT_CIRCUMFERENCE = 339.3
 const WARNING_TYPE_KEYS = ['心率', '血氧', '体温', '压力']
 const WARNING_TYPE_COLORS = ['#ff3b3b', '#ff8c00', '#00e676', '#00c8ff']
-const EVENT_LEVEL_TEXT_MAP = { critical: '特急', high: '紧急', medium: '一般', low: '轻微' }
+export const SEVERITY_LEVEL_MAP = {
+  CRITICAL: 'critical',
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low'
+}
+
+export const EVENT_LEVEL_TEXT_MAP = {
+  critical: '特急',
+  high: '紧急',
+  medium: '一般',
+  low: '轻微'
+}
+
+export const EVENT_LEVEL_TONE_MAP = {
+  critical: 'danger',
+  high: 'warning',
+  medium: 'primary',
+  low: 'info'
+}
+
+export const EVENT_LEVEL_COLOR_MAP = {
+  critical: '#ff3b3b',
+  high: '#ff8c00',
+  medium: '#00c8ff',
+  low: '#6e94b0'
+}
+
+export const EVENT_STATUS_TEXT_MAP = {
+  NEW: '待确认',
+  ACKED: '已确认',
+  DISPATCHED: '已派遣',
+  PROCESSING: '处理中',
+  RESOLVED: '已处理',
+  FALSE_ALARM: '误报关闭'
+}
+
+export const EVENT_SOURCE_TEXT_MAP = {
+  HEALTH_THRESHOLD: '体征预警',
+  DEVICE_ALARM: '设备报警',
+  TREND_WARNING: '趋势风险',
+  HEALTH: '体征预警',
+  LEGACY: '历史事件'
+}
+
+export const SLA_STATUS_TEXT_MAP = {
+  NOT_CONFIGURED: '未配置',
+  ON_TIME: '按期处置',
+  OVERDUE: '已超时'
+}
+
 const DEPT_LEVEL_TEXT_MAP = { H: '高危', M: '中危', L: '低', N: '正常' }
 
 export function getEventLevelText(level) {
-  return EVENT_LEVEL_TEXT_MAP[level] || level
+  return EVENT_LEVEL_TEXT_MAP[level] || '一般'
+}
+
+export function getEventLevelTone(level) {
+  return EVENT_LEVEL_TONE_MAP[level] || 'primary'
+}
+
+export function getEventLevelColor(level) {
+  return EVENT_LEVEL_COLOR_MAP[level] || '#00c8ff'
+}
+
+export function getEventStatusText(status) {
+  return EVENT_STATUS_TEXT_MAP[status] || (status ? String(status) : '待确认')
+}
+
+export function getEventSourceText(source) {
+  return EVENT_SOURCE_TEXT_MAP[source] || '体征预警'
+}
+
+export function getSlaStatusText(slaStatus) {
+  return SLA_STATUS_TEXT_MAP[slaStatus] || '未配置'
 }
 
 export function buildKpiDetailText(key, stats, watchStatus) {
@@ -28,37 +98,70 @@ export function buildRenderedDeptAiReport(content) {
     .replace(/\n/g, '<br>')
 }
 
+export function inferFallbackSeverity(record) {
+  const eventCode = String(record?.eventCode || record?.event_code || '').toUpperCase()
+  const incidentType = String(record?.type || '').toUpperCase()
+  const warningType = String(record?.typeLabel || record?.warningType || record?.warning_type || record?.type || '')
+
+  if (eventCode === 'SOS' || incidentType === 'SOS' || warningType.includes('SOS') || warningType.includes('sos')) {
+    return 'critical'
+  }
+  if (eventCode === 'FALL' || incidentType === 'FALL' || warningType.includes('跌倒') || warningType.includes('fall')) {
+    return 'high'
+  }
+  if (warningType.includes('心率') || warningType.includes('血氧')) {
+    return 'high'
+  }
+  if (warningType.includes('体温')) {
+    return 'medium'
+  }
+  if (warningType.includes('疲劳') || warningType.includes('睡眠')) {
+    return 'low'
+  }
+  return 'medium'
+}
+
 export function mapWarningToEvent(record) {
+  if (!record) return null
   const warningType = record.typeLabel || record.warningType || record.warning_type || record.type || ''
   const eventCode = String(record.eventCode || record.event_code || '').toUpperCase()
   const incidentType = String(record.type || '').toUpperCase()
+  const eventSource = String(record.eventSource || record.source || record.event_source || 'HEALTH_THRESHOLD').toUpperCase()
+
+  // 1. Structured severity takes strict precedence over warningType keywords
+  const rawSeverity = String(record.severity || record.warningSeverity || '').toUpperCase()
+  const level = SEVERITY_LEVEL_MAP[rawSeverity] || inferFallbackSeverity(record)
+
+  // 2. Classify eventType: SOS is strictly DEVICE_ALARM with SOS code
   let eventType = 'abnormal'
-  let level = 'medium'
   let icon = 'WARN'
 
-  if (eventCode === 'SOS' || incidentType === 'SOS' || warningType.includes('SOS') || warningType.includes('sos')) {
+  const isSos = eventCode === 'SOS' || incidentType === 'SOS' ||
+    (eventSource === 'DEVICE_ALARM' && (warningType.includes('SOS') || warningType.includes('sos')))
+  const isFall = eventCode === 'FALL' || incidentType === 'FALL' ||
+    (eventSource === 'DEVICE_ALARM' && (warningType.includes('跌倒') || warningType.includes('fall')))
+  const isStatic = incidentType === 'STILL' || warningType.includes('静止') || warningType.includes('static')
+
+  if (isSos) {
     eventType = 'sos'
-    level = 'critical'
     icon = 'SOS'
-  } else if (eventCode === 'FALL' || incidentType === 'FALL' || warningType.includes('跌倒') || warningType.includes('fall')) {
+  } else if (isFall) {
     eventType = 'fall'
-    level = 'high'
     icon = 'FALL'
-  } else if (incidentType === 'STILL' || warningType.includes('静止') || warningType.includes('static')) {
+  } else if (isStatic) {
     eventType = 'static'
-    level = 'medium'
     icon = 'IDLE'
   } else if (warningType.includes('心率')) {
-    level = 'high'
+    eventType = 'abnormal'
     icon = 'HR'
   } else if (warningType.includes('血氧')) {
-    level = 'high'
+    eventType = 'abnormal'
     icon = 'SpO2'
   } else if (warningType.includes('体温')) {
-    level = 'medium'
+    eventType = 'abnormal'
     icon = 'TEMP'
   } else if (warningType.includes('疲劳') || warningType.includes('睡眠')) {
-    level = 'low'
+    eventType = 'abnormal'
     icon = 'REST'
   }
 
@@ -67,33 +170,53 @@ export function mapWarningToEvent(record) {
   if (createdAt) {
     const createdDate = new Date(createdAt)
     if (!isNaN(createdDate)) {
-      durationMinutes = Math.round((Date.now() - createdDate.getTime()) / 60000)
+      durationMinutes = Math.max(0, Math.round((Date.now() - createdDate.getTime()) / 60000))
     }
   }
+
+  const backendStatus = record.status || (record.handled ? 'RESOLVED' : 'NEW')
+  const statusLabel = getEventStatusText(backendStatus)
+
+  const slaConfigured = record.sla?.configured === true
+  const slaStatus = record.sla?.status || (slaConfigured ? 'ON_TIME' : 'NOT_CONFIGURED')
+
+  const ownerStatus = record.owner?.status || (record.owner?.name ? 'ASSIGNED' : 'UNASSIGNED')
+  const ownerName = record.owner?.name || ''
+  const ownerDisplay = ownerName || (record.owner?.status === 'UNASSIGNED' ? '未分派' : '未分派')
+
+  const locationDisplay = record.location?.status === 'UNAVAILABLE'
+    ? '未接入定位'
+    : (record.location?.label || record.location || record.deptName || record.dept_name || '未接入定位')
+
+  const vitalSnapshot = record.vitalSnapshot
+    ? `${record.vitalSnapshot.indicator || ''}: ${record.vitalSnapshot.value || ''}`
+    : ''
 
   return {
     id: record.warningId ?? record.id,
     incidentId: record.incidentId || '',
     icon,
     type: warningType,
-    eventSource: record.eventSource || record.event_source || 'LEGACY',
+    eventSource,
     eventCode,
     user: record.person?.name || record.userName || record.user_name || '',
     userCode: record.person?.userCode || record.userCode || record.user_code || '',
     dept: record.person?.department || record.deptName || record.dept_name || '',
-    location: record.location?.status === 'UNAVAILABLE'
-      ? '未接入定位'
-      : (record.location?.label || record.location || record.deptName || record.dept_name || ''),
+    location: locationDisplay,
     time: formatEventAge(createdAt),
     occurredAt: createdAt,
-    owner: record.owner?.name || (record.owner?.status === 'UNASSIGNED' ? '未分派' : ''),
-    ownerStatus: record.owner?.status || '',
+    owner: ownerDisplay,
+    ownerStatus,
     sla: record.sla?.configured ? record.sla.deadlineAt : '未配置',
-    slaStatus: record.sla?.status || (record.sla?.configured ? 'ON_TIME' : 'NOT_CONFIGURED'),
+    slaStatus,
+    slaText: getSlaStatusText(slaStatus),
     level,
+    severity: rawSeverity || (level === 'critical' ? 'CRITICAL' : level === 'high' ? 'HIGH' : level === 'medium' ? 'MEDIUM' : 'LOW'),
     eventType,
     durationMinutes,
-    status: record.status || (record.handled ? 'RESOLVED' : 'NEW')
+    status: backendStatus,
+    statusLabel,
+    vitalSnapshot
   }
 }
 
@@ -399,25 +522,32 @@ export function buildWatchStatus(realtimeStats) {
 export function buildStageIntelItems({ pendingCount, criticalCount, unassignedCount, overdueCount, dataAsOf }) {
   return [
     {
-      key: 'active-risk',
-      label: '当前风险',
-      value: pendingCount || 0,
-      note: `高危 ${criticalCount || 0} / 其他 ${Math.max(0, (pendingCount || 0) - (criticalCount || 0))}`,
-      tone: criticalCount > 0 ? 'danger' : pendingCount > 0 ? 'warning' : 'safe'
+      key: 'critical',
+      label: '高危待办',
+      value: criticalCount || 0,
+      note: '优先介入',
+      tone: criticalCount > 0 ? 'danger' : 'safe'
+    },
+    {
+      key: 'overdue',
+      label: 'SLA超时',
+      value: overdueCount || 0,
+      note: '超过时限',
+      tone: overdueCount > 0 ? 'danger' : 'safe'
     },
     {
       key: 'unassigned',
       label: '未分派',
       value: unassignedCount || 0,
-      note: '尚无责任人的未闭环预警',
+      note: '暂无责任人',
       tone: unassignedCount > 0 ? 'warning' : 'safe'
     },
     {
-      key: 'overdue',
-      label: '已超时',
-      value: overdueCount || 0,
-      note: '超过处置时限的未闭环预警',
-      tone: overdueCount > 0 ? 'danger' : 'safe'
+      key: 'active-risk',
+      label: '待处置',
+      value: pendingCount || 0,
+      note: `高危 ${criticalCount || 0} / 其他 ${Math.max(0, (pendingCount || 0) - (criticalCount || 0))}`,
+      tone: criticalCount > 0 ? 'danger' : pendingCount > 0 ? 'warning' : 'safe'
     },
     {
       key: 'freshness',

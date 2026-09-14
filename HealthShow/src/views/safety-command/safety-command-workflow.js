@@ -11,10 +11,10 @@ export function buildSafetyCommandQueue(events) {
 
   return queue.length ? queue : [{
     id: 'safe-duty',
-    title: '当前无紧急事件',
+    title: '当前无未闭环预警',
     meta: '保持在线巡查，关注设备离线和低电量变化',
-    context: '无事件上下文，不能发起外部指令',
-    action: '广播',
+    context: '当前所有事件均已闭环或无待处置事件',
+    action: '',
     tone: 'safe',
     event: null
   }]
@@ -25,13 +25,15 @@ export function buildSafetyPriorityEvent(events) {
   if (!event) return null
   return {
     ...event,
-    tone: event.eventType === 'sos' ? 'danger' : event.eventType === 'fall' ? 'warning' : 'primary',
-    statusLabel: {
+    tone: event.level === 'critical' ? 'danger' : event.level === 'high' ? 'warning' : 'primary',
+    statusLabel: event.statusLabel || {
       NEW: '待确认',
       ACKED: '已确认',
+      DISPATCHED: '已派遣',
+      PROCESSING: '处理中',
       RESOLVED: '已处理',
       FALSE_ALARM: '误报关闭'
-    }[event.status] || '待处置'
+    }[event.status] || '待确认'
   }
 }
 
