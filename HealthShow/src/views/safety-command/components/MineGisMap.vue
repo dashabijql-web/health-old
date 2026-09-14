@@ -4,7 +4,7 @@
     <div class="mine-gis__hud mine-gis__hud--top">
       <div class="mine-gis__card mine-gis__summary">
         <strong>矿井巷道 GIS</strong>
-        <span>CAD 平面坐标 · 真实巷道与注记</span>
+        <span>CAD 巷道底图 · 事件定位未接入</span>
         <div class="mine-gis__stats">
           <span>巷道 <b>{{ formatNumber(mapData?.lineCount) }}</b></span>
           <span>顶点 <b>{{ formatNumber(mapData?.pointCount) }}</b></span>
@@ -230,21 +230,26 @@ onBeforeUnmount(() => {
 .mine-gis__hud--bottom { right: 10px; bottom: 10px; left: 10px; justify-content: space-between; align-items: flex-end; }
 .mine-gis__card { pointer-events: auto; border: 1px solid rgba(62,224,196,.22); border-radius: 7px; background: rgba(8,16,24,.82); backdrop-filter: blur(8px); box-shadow: 0 8px 20px rgba(0,0,0,.22); }
 .mine-gis__summary { display: grid; gap: 3px; padding: 8px 10px; min-width: 190px; }
-.mine-gis__summary strong { color: #e5fbff; font-size: 12px; }
-.mine-gis__summary > span, .mine-gis__hint { color: rgba(215,236,244,.65); font-size: 9px; }
-.mine-gis__stats { display: flex; gap: 9px; color: rgba(215,236,244,.72); font-size: 9px; }
+.mine-gis__summary strong { color: #e5fbff; font-size: 13px; }
+.mine-gis__summary > span, .mine-gis__hint { color: rgba(215,236,244,.75); font-size: 11px; }
+.mine-gis__stats { display: flex; gap: 9px; color: rgba(215,236,244,.8); font-size: 11px; }
 .mine-gis__stats b { color: #3ee0c4; font-variant-numeric: tabular-nums; }
-.mine-gis__controls { display: flex; gap: 5px; align-items: center; padding: 7px; flex-wrap: wrap; }
-.mine-gis__controls input[type='search'] { width: 154px; min-width: 0; padding: 5px 7px; border: 1px solid rgba(62,224,196,.22); border-radius: 5px; outline: none; background: rgba(8,16,24,.75); color: #d7ecf4; font: inherit; }
-.mine-gis__controls label, .mine-gis__controls button { padding: 4px 6px; border: 1px solid rgba(62,224,196,.18); border-radius: 4px; background: rgba(62,224,196,.07); color: #d7ecf4; font: inherit; white-space: nowrap; }
+.mine-gis__controls { display: flex; gap: 6px; align-items: center; padding: 7px 9px; flex-wrap: wrap; }
+.mine-gis__controls input[type='search'] { width: 140px; min-width: 0; padding: 5px 8px; border: 1px solid rgba(62,224,196,.22); border-radius: 5px; outline: none; background: rgba(8,16,24,.75); color: #d7ecf4; font: inherit; font-size: 12px; }
+.mine-gis__controls label, .mine-gis__controls button { padding: 4px 7px; border: 1px solid rgba(62,224,196,.18); border-radius: 4px; background: rgba(62,224,196,.07); color: #d7ecf4; font: inherit; font-size: 12px; white-space: nowrap; }
 .mine-gis__controls button { cursor: pointer; }
 .mine-gis__controls button:hover { background: rgba(62,224,196,.16); }
 .mine-gis__hint, .mine-gis__coord { padding: 7px 9px; }
-.mine-gis__coord { display: grid; gap: 3px; min-width: 104px; color: rgba(215,236,244,.72); font-variant-numeric: tabular-nums; }
+.mine-gis__coord { display: grid; gap: 3px; min-width: 104px; color: rgba(215,236,244,.8); font-variant-numeric: tabular-nums; font-size: 11px; }
 .mine-gis__coord small { color: #3ee0c4; text-align: right; }
 .mine-gis__hit { position: absolute; z-index: 4; display: grid; gap: 2px; max-width: 220px; padding: 7px 9px; border: 1px solid #3ee0c4; border-radius: 6px; background: rgba(8,16,24,.9); color: #d7ecf4; pointer-events: none; }
-.mine-gis__hit strong { color: #3ee0c4; }
+.mine-gis__hit strong { color: #3ee0c4; font-size: 12px; }
 .mine-gis__state { position: absolute; inset: 0; z-index: 5; display: grid; place-content: center; gap: 5px; text-align: center; background: rgba(8,16,24,.72); color: #d7ecf4; }
-.mine-gis__state span { color: #ffb76b; font-size: 10px; }
-@media (max-width: 720px) { .mine-gis__hud--top { flex-direction: column; } .mine-gis__controls { width: max-content; } .mine-gis__summary > span, .mine-gis__hint { display: none; } .mine-gis__controls input[type='search'] { width: 132px; } }
+.mine-gis__state span { color: #ffb76b; font-size: 12px; }
+@media (max-width: 720px) {
+  .mine-gis__hud--top { flex-direction: column; gap: 6px; }
+  .mine-gis__controls { width: 100%; max-width: 100%; }
+  .mine-gis__summary > span, .mine-gis__hint { display: none; }
+  .mine-gis__controls input[type='search'] { width: 110px; }
+}
 </style>

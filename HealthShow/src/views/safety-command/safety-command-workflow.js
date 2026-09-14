@@ -1,11 +1,13 @@
+import { getEventLevelTone } from './safety-command-view-model.js'
+
 export function buildSafetyCommandQueue(events) {
   const queue = (events || []).map((event) => ({
     id: event.incidentId || `${event.id || 'warning'}-${event.occurredAt || event.time || event.user}`,
     title: `${event.user || '未知人员'} · ${event.type || '预警'}`,
     meta: `${event.location || event.dept || '未接入定位'} / ${event.time || '刚刚'}`,
-    context: `责任 ${event.owner || '未分派'} / SLA ${event.sla || '未配置'}`,
-    action: '处理',
-    tone: event.eventType === 'sos' || event.eventType === 'fall' ? 'danger' : 'warning',
+    context: `责任 ${event.owner || '未分派'} / SLA ${event.slaText || event.sla || '未配置'}`,
+    action: '处置',
+    tone: event.levelTone || getEventLevelTone(event.level),
     event
   }))
 

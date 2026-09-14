@@ -9,7 +9,8 @@ export function getCommandCenterIncidents(params, requestOptions = {}) {
   })
 }
 
-export function getCommandCenterDashboardSummary(params, requestOptions = {}) {
+export function getCommandCenterDashboardSummary(params) {
+  const requestOptions = arguments[1] || {}
   return request({
     ...requestOptions,
     url: '/command-center/dashboard-summary',

@@ -1,14 +1,18 @@
 # AGENTS.md
 
-本文件是 `health` monorepo 的项目协作约束和运行说明。根目录 `README.md` 仅提供项目概览与快速入口。代码、配置和实际运行结果是运行事实；若与本文不一致，应先确认预期行为，再修正实现或更新本文。
+## 沟通与排障原则
+
+- 回答时使用通俗易懂的语言；解释复杂概念时优先使用恰当的类比。
+- 回答关于本文件内容的疑问前，先核对对应代码、配置或实际运行结果，不仅凭文档文字下结论。
+- 排查复杂 Bug 时，先复现问题并通过日志等手段收集证据；修复后运行针对性测试验证。
+
+代码、配置和实际运行结果是运行事实；若与本文不一致，应先确认预期行为，再修正实现或更新本文。
 
 ## 仓库边界与协作规则
 
 - 根目录是唯一 Git 仓库，远端为 `https://github.com/dashabijql-web/health.git`。`HealthShow` 和 `HealthData` 均为子目录，所有 Git 操作在根目录执行。
-- `/Users/jiangqianli/Documents/code/health` 固定连接新库 `health_new`；同级 `health-old` 固定连接老库 `health`。两个 checkout 独立修改、运行和验收，禁止跨目录混改或通过请求切换数据库。
+- `/Users/jiangqianli/Documents/code/health-new` 固定连接新库 `health_new`；同级 `health-old` 固定连接老库 `health`。两个 checkout 独立修改、运行和验收，禁止跨目录混改或通过请求切换数据库。
 - 未经用户明确要求，不提交、不推送、不修改 `origin`。
-- 仅当跨模块约束、公共入口、认证、数据源、协议、运行方式或测试门禁发生变化时更新本文；普通局部改动以代码和测试为准。
-- 除根目录 `README.md` 和本文件外，不新增 Markdown 文档；测试产生的临时 Markdown 文件须在交付前清理。
 
 ## 项目结构
 
@@ -20,7 +24,7 @@ health/
 └── tools/                          macOS 启动、数据库和手表诊断工具
 ```
 
-前端 `HealthShow` 使用 Vue 3、Vite、Vuex、Vue Router、Element Plus 和 ECharts。后端 `HealthData` 使用 Spring Boot、Java 21、MyBatis-Plus、Sa-Token、Redis、Netty、SQL Server 和 Actuator，默认构建为可执行 JAR，不使用 WAR 或外部 Tomcat。IDEA 本地调试直接运行 `HealthApplication.main()`；交付产物通过 `mvn package` 构建并用 `java -jar target/health-*.jar` 启动。依赖版本以 `package.json`、锁文件和 `pom.xml` 为准，未经任务要求不升级依赖。
+后端使用 Java 21，默认通过 `HealthApplication.main()` 运行；交付产物使用 Maven 构建为可执行 JAR。依赖及版本以 `package.json`、锁文件和 `pom.xml` 为准，未经任务要求不升级依赖。
 
 ## 端口与地址
 
@@ -29,21 +33,18 @@ health/
 | 前端 | `http://localhost:9528/` | Vite 开发服务器 |
 | 后端 HTTP | `http://localhost:8080/health` | Spring Boot API |
 | 后端健康 | `http://localhost:8080/health/actuator/health` | 顶层 `status=UP` 才算可用 |
-| 后端指标 | `http://localhost:8080/health/actuator/metrics` | Micrometer 指标 |
-| 手表 TCP | `127.0.0.1:9000` | Netty 手表协议 |
-| 手表 SCTP | `9001` | 默认关闭，仅 Linux 生产按需启用 |
-| Redis | `127.0.0.1:6379` | 手表数据缓冲和 Sa-Token 存储 |
+| 手表 TCP | `9000/tcp` | 手表私有 TCP 协议入口；后端由 Netty 监听，默认绑定所有网络接口 |
+| Redis | `127.0.0.1:6379` | 后端手表健康数据批量写库缓冲、实时快照和在线索引 |
 | SQL Server | `127.0.0.1:1433` | 业务数据库 |
 
-前端 `/dev-api/*` 由 Vite 代理到后端 `/health/*`，前端业务代码不应绕过 `HealthShow/src/utils/request.js` 直接创建请求客户端。
+开发环境中，前端 `/dev-api/*` 由 Vite 代理并重写为后端 `/health/*`；生产环境直接使用 `/health`。常规业务请求统一使用 `HealthShow/src/utils/request.js`；SSE 等需要原生流式读取的特殊场景可直接使用 `fetch`，但需自行处理 Token 和错误。
 
 ## 登录与权限
 
-- 本地默认可登录账号是 `admin / admin123`；登录页也预填该账号。实际部署应通过数据库和环境变量管理密码，不要把生产密码写进仓库。
-- `POST /health/auth/login` 校验账号密码并由 Sa-Token 生成 token。前端用 Cookie `User-Token` 保存 token，后续请求从 Cookie 读取并放入 `satoken` 请求头；token 不以 localStorage 作为主存储。
-- `/auth/login`、`/auth/logout` 和 `/error` 是认证白名单；其他业务请求必须通过 Sa-Token 登录校验。
-- 当前项目禁止通过请求头或 Cookie 改变数据库；遗留的数据源路由类型仅用于兼容现有代码，不能恢复前端切库入口或请求级数据库覆盖。
-- CORS 默认允许 `http://localhost:9528` 和 `http://127.0.0.1:9528`，允许凭证和 `satoken` 请求头；生产环境应收紧来源。
+- 本地默认账号为 `admin / admin123`；生产密码不得写入仓库。
+- `POST /health/auth/login` 使用 Sa-Token 登录。前端将 token 保存在 Cookie `User-Token`，并通过 `satoken` 请求头发送。
+- `/auth/login`、`/auth/logout` 和 `/error` 为认证白名单，其他业务请求需要登录。
+- CORS 默认允许本机 `9528` 和 `9530` 端口的前端来源，并允许凭证；生产环境通过 `HEALTH_CORS_ALLOWED_ORIGINS` 收紧来源。
 
 ## 前端路由
 

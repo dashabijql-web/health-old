@@ -17,10 +17,10 @@
       <div v-if="filteredEvents.length === 0" class="ev-empty">暂无事件</div>
       <div
         v-for="ev in filteredEvents" :key="ev.id"
-        :class="['ev', (ev.eventType==='sos'||ev.eventType==='fall') ? 'ev-crit' : 'ev-warn']"
+        :class="['ev', `ev-${eventVisualTone(ev)}`]"
         @click="$emit('showDetail', ev)"
       >
-        <div :class="['ev-side', (ev.eventType==='sos'||ev.eventType==='fall') ? '' : 'side-w']"></div>
+        <div :class="['ev-side', `side-${eventVisualTone(ev)}`]"></div>
         <div class="ev-main">
           <div class="ev-primary" :title="ev.type || '未知事件'">
             <div class="ev-title-row">
@@ -52,21 +52,21 @@
           </div>
 
           <div class="ev-field ev-duration">
-            <span class="ev-k">滞留</span>
+            <span class="ev-k">时长</span>
             <span :class="['ev-v', 'ev-duration-value', { 'is-hot': isDurationHot(ev), 'is-warn': !isPriorityEvent(ev) }]">
               {{ eventDurationText(ev) }}
             </span>
           </div>
 
           <div class="ev-field ev-stage">
-            <span class="ev-k">阶段</span>
+            <span class="ev-k">状态</span>
             <span :class="['ev-v', 'ev-stage-value', eventStageClass(ev)]">{{ eventStageText(ev) }}</span>
           </div>
 
           <div class="ev-field ev-action-field">
             <span class="ev-k">发生</span>
             <span class="ev-v ev-age">{{ ev.time || '刚刚' }}</span>
-            <span class="ev-act" @click.stop="$emit('handle', ev)">处理</span>
+            <button type="button" class="ev-act" @click.stop="$emit('handle', ev)">处置</button>
           </div>
         </div>
       </div>
@@ -77,11 +77,23 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch, type PropType } from 'vue'
 import * as echarts from '@/utils/echarts-setup'
+import {
+  getEventLevelTone,
+  getEventLevelText,
+  getEventSourceText,
+  getEventStatusText,
+  getSlaStatusText
+} from '../safety-command-view-model'
 
 interface SafetyEvent {
   id?: number | string
   eventType?: string
   level?: string
+  severity?: string
+  status?: string
+  statusLabel?: string
+  slaStatus?: string
+  sla?: string
   type?: string
   icon?: string
   user?: string
@@ -90,6 +102,7 @@ interface SafetyEvent {
   dept?: string
   location?: string
   eventSource?: string
+  time?: string
   [key: string]: unknown
 }
 
@@ -135,26 +148,22 @@ const filteredEvents = computed(() =>
   currentFilter.value === 'all' ? props.events : props.events.filter(e => e.eventType === currentFilter.value)
 )
 
-const levelTextMap = { critical: '特急', high: '紧急', medium: '一般', low: '轻微' }
-const adviceTextMap = {
+const adviceTextMap: Record<string, string> = {
   sos: '定位派单 / 语音回呼',
   fall: '医疗联动 / 就近支援',
   static: '语音确认 / 区域巡检',
-  abnormal: '复测指标 / 追踪班组'
+  abnormal: '指标复测 / 追踪班组'
 }
 
-const isPriorityEvent = (event?: SafetyEvent) => event?.eventType === 'sos' || event?.eventType === 'fall'
+const isPriorityEvent = (event?: SafetyEvent) => event?.level === 'critical' || event?.eventType === 'sos' || event?.eventType === 'fall'
 const eventMinutes = (event?: SafetyEvent) => Math.max(0, Number(event?.durationMinutes) || 0)
-const eventLevelText = (event?: SafetyEvent) => levelTextMap[event?.level || ''] || levelTextMap.medium
+const eventLevelText = (event?: SafetyEvent) => event?.level ? getEventLevelText(event.level) : '一般'
 const eventDeptText = (event?: SafetyEvent) => event?.dept || '未分组'
-const eventLocationText = (event?: SafetyEvent) => event?.location || event?.dept || '未定位'
+const eventLocationText = (event?: SafetyEvent) => event?.location || event?.dept || '未接入定位'
 const eventAdviceText = (event?: SafetyEvent) => adviceTextMap[event?.eventType || ''] || adviceTextMap.abnormal
-const eventSourceText = (event?: SafetyEvent) => ({
-  HEALTH_THRESHOLD: '体征预警',
-  DEVICE_ALARM: '设备报警',
-  TREND_WARNING: '趋势风险'
-}[event?.eventSource || ''] || '历史事件')
-const isDurationHot = (event?: SafetyEvent) => eventMinutes(event) > (isPriorityEvent(event) ? 5 : 10)
+const eventSourceText = (event?: SafetyEvent) => getEventSourceText(event?.eventSource || '')
+const eventVisualTone = (event?: SafetyEvent) => getEventLevelTone(event?.level || 'medium')
+const isDurationHot = (event?: SafetyEvent) => event?.slaStatus === 'OVERDUE' || eventMinutes(event) > (isPriorityEvent(event) ? 15 : 60)
 
 const eventDurationText = (event?: SafetyEvent) => {
   const minutes = eventMinutes(event)
@@ -164,18 +173,16 @@ const eventDurationText = (event?: SafetyEvent) => {
 }
 
 const eventStageText = (event?: SafetyEvent) => {
-  const minutes = eventMinutes(event)
-  if (!minutes) return '待确认'
-  if (isPriorityEvent(event) && minutes > 10) return '升级联动'
-  if (isPriorityEvent(event) && minutes > 5) return '超时响应'
-  if (event?.eventType === 'static' && minutes > 15) return '复核超时'
-  if (event?.eventType === 'abnormal' && minutes > 10) return '待复测'
-  return '处置中'
+  if (event?.statusLabel) return String(event.statusLabel)
+  if (event?.status) return getEventStatusText(event.status)
+  return '待确认'
 }
 
 const eventStageClass = (event?: SafetyEvent) => {
-  if (isDurationHot(event)) return 'stage-hot'
-  if (isPriorityEvent(event)) return 'stage-priority'
+  const status = String(event?.status || '').toUpperCase()
+  if (status === 'RESOLVED' || status === 'FALSE_ALARM') return 'stage-safe'
+  if (event?.slaStatus === 'OVERDUE') return 'stage-hot'
+  if (event?.level === 'critical') return 'stage-priority'
   return 'stage-normal'
 }
 
@@ -197,43 +204,49 @@ onUnmounted(() => { if (trendChart) trendChart.dispose() })
 </script>
 
 <style scoped lang="scss">
-$cyan:#00d4ff; $red:#ff4757; $orange:#ff6b35; $yellow:#ffd32a; $green:#2ed573;
+$white:#ffffff; $cyan:#00d4ff; $red:#ff4757; $orange:#ff6b35; $yellow:#ffd32a; $green:#2ed573;
 $panel:rgba(10,22,42,.82); $border2:rgba(0,212,255,.07);
 $dim:rgba(255,255,255,.45); $dim2:rgba(255,255,255,.22);
 
 .ev-panel { flex:1.5; }
 
-.panel { background:$panel; border:1px solid $border2; border-radius:5px; padding:10px 12px; display:flex; flex-direction:column; min-height:0; backdrop-filter:blur(6px); position:relative; overflow:hidden;
-  &::before { content:''; position:absolute; top:0; left:14px; right:14px; height:1px; background:linear-gradient(90deg,transparent,rgba($cyan,.15),transparent); }
+.panel { background:$panel; border:1px solid $border2; border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; min-height:0; backdrop-filter:blur(10px); position:relative; overflow:hidden;
+  &::before { content:''; position:absolute; top:0; left:14px; right:14px; height:1px; background:linear-gradient(90deg,transparent,rgba($cyan,.25),transparent); }
 }
-.ph { display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; margin-bottom:8px; flex-shrink:0; border-bottom:1px solid rgba($cyan,.08); }
-.pt { font-size:11px; font-weight:600; color:#fff; display:flex; align-items:center; gap:7px; letter-spacing:.5px; text-transform:uppercase; }
-.pt-bar { width:2px; height:12px; border-radius:1px; flex-shrink:0; }
-.red-bar { background:$red; box-shadow:0 0 6px $red; }
-.pt-cnt { font-family:'JetBrains Mono','Courier New',monospace; color:$red; font-size:12px; }
-.tabs { display:flex; gap:2px; }
-.tb { font-size:9px; padding:2px 7px; border-radius:2px; border:1px solid rgba($cyan,.12); color:$dim; cursor:pointer; transition:all .15s;
-  &.on, &:hover { background:rgba($cyan,.1); border-color:rgba($cyan,.35); color:$cyan; }
+.ph { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; margin-bottom:10px; flex-shrink:0; border-bottom:1px solid rgba($cyan,.12); }
+.pt { font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.5px; }
+.pt-bar { width:3px; height:14px; border-radius:2px; flex-shrink:0; }
+.red-bar { background:$red; box-shadow:0 0 8px $red; }
+.pt-cnt { font-family:'JetBrains Mono','Courier New',monospace; color:$red; font-size:14px; font-weight:700; }
+.tabs { display:flex; gap:4px; }
+.tb { font-size:12px; padding:4px 10px; border-radius:4px; border:1px solid rgba($cyan,.15); color:rgba($white,.7); cursor:pointer; transition:all .15s;
+  &.on, &:hover { background:rgba($cyan,.14); border-color:rgba($cyan,.45); color:$cyan; }
 }
-.ev-source { font-size:9px; padding:2px 5px; border:1px solid rgba($cyan,.22); color:$cyan; border-radius:2px; white-space:nowrap; }
+.ev-source { font-size:11px; padding:2px 6px; border:1px solid rgba($cyan,.25); color:$cyan; border-radius:3px; white-space:nowrap; }
 
-.ev-trend { height:32px; flex-shrink:0; margin-bottom:4px; }
-.ev-list { flex:1; overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:4px; }
-.ev-empty { text-align:center; padding:20px; color:rgba($green,.7); font-size:11px; }
+.ev-trend { height:32px; flex-shrink:0; margin-bottom:6px; }
+.ev-list { flex:1; overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:6px; }
+.ev-empty { text-align:center; padding:24px; color:rgba($green,.8); font-size:13px; }
 
 .ev {
-  display:grid; grid-template-columns:3px minmax(0, 1fr); align-items:stretch; border-radius:4px; overflow:hidden;
-  border:1px solid rgba($red,.12); background:rgba($red,.03);
+  display:grid; grid-template-columns:4px minmax(0, 1fr); align-items:stretch; border-radius:6px; overflow:hidden;
+  border:1px solid rgba($cyan,.2); background:rgba($cyan,.035);
   cursor:pointer; transition:background .15s; flex-shrink:0;
-  &.ev-warn { border-color:rgba($orange,.12); background:rgba($orange,.03); }
-  &:hover { background:rgba($red,.08); }
-  &.ev-warn:hover { background:rgba($orange,.08); }
+  &:hover { background:rgba($cyan,.08); border-color:rgba($cyan,.4); }
+  &.ev-danger { border-color:rgba($red,.28); background:rgba($red,.05); }
+  &.ev-danger:hover { background:rgba($red,.1); border-color:rgba($red,.45); }
+  &.ev-warning { border-color:rgba($orange,.24); background:rgba($orange,.045); }
+  &.ev-warning:hover { background:rgba($orange,.09); border-color:rgba($orange,.42); }
+  &.ev-info { border-color:rgba($green,.2); background:rgba($green,.035); }
+  &.ev-info:hover { background:rgba($green,.075); border-color:rgba($green,.36); }
 }
 .ev-side {
-  width:3px; flex-shrink:0;
-  background:linear-gradient(180deg,$red,rgba($red,.3));
+  width:4px; flex-shrink:0;
+  background:linear-gradient(180deg,$cyan,rgba($cyan,.3));
 }
-.side-w { background:linear-gradient(180deg,$orange,rgba($orange,.3)); }
+.side-danger { background:linear-gradient(180deg,$red,rgba($red,.3)); }
+.side-warning { background:linear-gradient(180deg,$orange,rgba($orange,.3)); }
+.side-info { background:linear-gradient(180deg,$green,rgba($green,.3)); }
 
 .ev-main {
   min-width:0;
@@ -241,7 +254,7 @@ $dim:rgba(255,255,255,.45); $dim2:rgba(255,255,255,.22);
   grid-template-columns: minmax(180px, 1.35fr) minmax(112px, .78fr) minmax(124px, .9fr) minmax(132px, 1fr) minmax(82px, .52fr) minmax(104px, .72fr) minmax(84px, .48fr);
   align-items:center;
   gap:0 10px;
-  padding:7px 10px;
+  padding:9px 12px;
 }
 .ev-primary,
 .ev-field {
@@ -260,23 +273,23 @@ $dim:rgba(255,255,255,.45); $dim2:rgba(255,255,255,.22);
 }
 .ev-level {
   flex-shrink:0;
-  font-size:9px;
+  font-size:12px;
   line-height:1;
-  padding:3px 5px;
-  border-radius:2px;
+  padding:3px 6px;
+  border-radius:3px;
   font-weight:700;
   font-family:'JetBrains Mono','Courier New',monospace;
 }
-.ev-level-critical { background:rgba($red,.18); color:#ff8a98; border:1px solid rgba($red,.28); }
-.ev-level-high { background:rgba($orange,.18); color:#ffb06a; border:1px solid rgba($orange,.28); }
-.ev-level-medium { background:rgba($yellow,.12); color:#ffe277; border:1px solid rgba($yellow,.2); }
-.ev-level-low { background:rgba($green,.1); color:#75f0a4; border:1px solid rgba($green,.18); }
+.ev-level-critical { background:rgba($red,.22); color:#ff6b7b; border:1px solid rgba($red,.35); }
+.ev-level-high { background:rgba($orange,.2); color:#ff9f43; border:1px solid rgba($orange,.32); }
+.ev-level-medium { background:rgba($cyan,.15); color:#70dfff; border:1px solid rgba($cyan,.28); }
+.ev-level-low { background:rgba($green,.12); color:#2ed573; border:1px solid rgba($green,.25); }
 .ev-type {
   min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font-size:11px;
+  font-size:13px;
   font-weight:700;
   color:#fff;
   letter-spacing:.3px;
@@ -286,52 +299,52 @@ $dim:rgba(255,255,255,.45); $dim2:rgba(255,255,255,.22);
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font-size:9px;
-  color:rgba($cyan,.72);
+  font-size:11px;
+  color:rgba($cyan,.8);
 }
 .ev-field {
   display:flex;
   flex-direction:column;
   gap:3px;
   padding-left:10px;
-  border-left:1px solid rgba(255,255,255,.045);
+  border-left:1px solid rgba(255,255,255,.07);
 }
 .ev-k {
-  font-size:8px;
+  font-size:11px;
   line-height:1;
-  color:rgba(255,255,255,.28);
-  letter-spacing:.8px;
+  color:rgba(255,255,255,.45);
+  letter-spacing:.5px;
 }
 .ev-v {
   min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font-size:10px;
-  line-height:1.2;
-  color:rgba(255,255,255,.74);
+  font-size:12px;
+  line-height:1.25;
+  color:rgba(255,255,255,.88);
   small {
     margin-left:5px;
-    color:rgba(255,255,255,.32);
+    color:rgba(255,255,255,.45);
     font-family:'JetBrains Mono','Courier New',monospace;
-    font-size:8px;
+    font-size:10px;
   }
 }
 .ev-link {
   cursor:pointer;
-  &:hover { color:$cyan; }
+  &:hover { color:$cyan; text-decoration:underline; }
 }
 .ev-duration-value {
   font-family:'JetBrains Mono','Courier New',monospace;
-  color:#ff8a98;
-  &.is-warn { color:#ffb06a; }
-  &.is-hot { color:$red; animation:blink 1s infinite; }
+  color:#ff9f43;
+  &.is-hot { color:$red; font-weight:700; }
 }
 .ev-stage-value {
   font-weight:700;
   &.stage-hot { color:$red; }
-  &.stage-priority { color:#ffb06a; }
-  &.stage-normal { color:rgba($green,.82); }
+  &.stage-priority { color:#ff9f43; }
+  &.stage-safe { color:$green; }
+  &.stage-normal { color:$cyan; }
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
@@ -339,12 +352,12 @@ $dim:rgba(255,255,255,.45); $dim2:rgba(255,255,255,.22);
   align-items:flex-end;
   padding-left:8px;
 }
-.ev-age { color:$dim2; font-family:'JetBrains Mono','Courier New',monospace; }
+.ev-age { color:rgba(255,255,255,.5); font-family:'JetBrains Mono','Courier New',monospace; font-size:11px; }
 .ev-act {
-  margin-top:2px; font-size:9px; line-height:1; padding:4px 8px; border-radius:2px; cursor:pointer; letter-spacing:.5px;
-  background:rgba($cyan,.07); border:1px solid rgba($cyan,.25); color:$cyan;
+  margin-top:2px; font-size:12px; line-height:1; padding:5px 10px; border-radius:4px; cursor:pointer; letter-spacing:.5px; font-weight:600;
+  background:rgba($cyan,.1); border:1px solid rgba($cyan,.35); color:$cyan;
   transition:all .15s;
-  &:hover { background:rgba($cyan,.18); }
+  &:hover { background:rgba($cyan,.22); border-color:rgba($cyan,.6); }
 }
 
 @media (max-width: 980px) {

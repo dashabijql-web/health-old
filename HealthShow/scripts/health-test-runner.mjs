@@ -13,8 +13,15 @@ const SUMMARY_PATH = path.join(ARTIFACT_DIR, 'health-test-runner-summary.json')
 const args = process.argv.slice(2)
 const profile = args[0] || 'fast'
 const options = parseOptions(args.slice(1))
-const dataSource = options.source || process.env.API_DATA_SOURCE || 'old'
-const expectNonEmpty = options.expectNonEmpty ?? (dataSource === 'old' ? '1' : '0')
+const requestedDataSource = options.source || process.env.API_DATA_SOURCE || 'old'
+
+if (requestedDataSource !== 'old') {
+  console.error(`health-old only supports --source old (received: ${requestedDataSource})`)
+  process.exit(2)
+}
+
+const dataSource = 'old'
+const expectNonEmpty = '1'
 
 const PROFILES = {
   fast: {
@@ -45,7 +52,7 @@ const PROFILES = {
     preflight: 'integration',
     commands: [
       command('npm', ['run', 'audit:api']),
-      command('npm', ['run', dataSource === 'new' ? 'audit:data:new' : 'audit:data:old']),
+      command('npm', ['run', 'audit:data:old']),
       command('npm', ['run', 'audit:auth'])
     ]
   },
@@ -53,7 +60,7 @@ const PROFILES = {
     description: 'Performance gate: API latency and browser page-load budgets; requires running frontend/backend services.',
     preflight: 'integration',
     commands: [
-      command('npm', ['run', dataSource === 'new' ? 'audit:perf:new' : 'audit:perf:old'])
+      command('npm', ['run', 'audit:perf:old'])
     ]
   },
   quality: {
@@ -71,10 +78,10 @@ const PROFILES = {
       command('npm', ['run', 'test:frontend']),
       command('npm', ['run', 'test:quality']),
       command('npm', ['run', 'audit:api']),
-      command('npm', ['run', dataSource === 'new' ? 'audit:data:new' : 'audit:data:old']),
+      command('npm', ['run', 'audit:data:old']),
       command('npm', ['run', 'audit:auth']),
       command('npm', ['run', 'audit:e2e']),
-      command('npm', ['run', dataSource === 'new' ? 'audit:perf:new' : 'audit:perf:old']),
+      command('npm', ['run', 'audit:perf:old']),
       command('npm', ['run', 'audit:pipeline']),
       command('npm', ['run', 'audit:pipeline-warning']),
       command('npm', ['run', 'audit:write'])
@@ -276,7 +283,7 @@ function runCommand(step) {
         API_DATA_SOURCE: dataSource,
         API_EXPECT_NON_EMPTY: expectNonEmpty,
         PIPELINE_DATA_SOURCE: dataSource,
-        SQL_DB: dataSource === 'new' ? 'health_new' : 'health',
+        SQL_DB: 'health',
         ...step.env
       }
     })

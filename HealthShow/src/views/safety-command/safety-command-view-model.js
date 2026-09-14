@@ -71,7 +71,7 @@ export function getEventStatusText(status) {
 }
 
 export function getEventSourceText(source) {
-  return EVENT_SOURCE_TEXT_MAP[source] || '体征预警'
+  return EVENT_SOURCE_TEXT_MAP[source] || '历史事件'
 }
 
 export function getSlaStatusText(slaStatus) {
@@ -121,26 +121,54 @@ export function inferFallbackSeverity(record) {
   return 'medium'
 }
 
+export function inferFallbackEventSource(record) {
+  const eventCode = String(record?.eventCode || record?.event_code || '').toUpperCase()
+  const incidentType = String(record?.type || '').toUpperCase()
+  const warningType = String(record?.typeLabel || record?.warningType || record?.warning_type || record?.type || '')
+
+  if (
+    ['SOS', 'FALL', 'STILL', 'STATIC'].includes(eventCode) ||
+    ['SOS', 'FALL', 'STILL', 'STATIC'].includes(incidentType) ||
+    /SOS|sos|跌倒|静止|static|fall/.test(warningType)
+  ) {
+    return 'DEVICE_ALARM'
+  }
+  if (/趋势|预测|trend/i.test(warningType)) return 'TREND_WARNING'
+  return 'HEALTH_THRESHOLD'
+}
+
 export function mapWarningToEvent(record) {
   if (!record) return null
   const warningType = record.typeLabel || record.warningType || record.warning_type || record.type || ''
   const eventCode = String(record.eventCode || record.event_code || '').toUpperCase()
   const incidentType = String(record.type || '').toUpperCase()
-  const eventSource = String(record.eventSource || record.source || record.event_source || 'HEALTH_THRESHOLD').toUpperCase()
+  const structuredEventSource = record.eventSource || record.source || record.event_source
+  const eventSource = structuredEventSource
+    ? String(structuredEventSource).toUpperCase()
+    : inferFallbackEventSource(record)
 
   // 1. Structured severity takes strict precedence over warningType keywords
   const rawSeverity = String(record.severity || record.warningSeverity || '').toUpperCase()
   const level = SEVERITY_LEVEL_MAP[rawSeverity] || inferFallbackSeverity(record)
 
-  // 2. Classify eventType: SOS is strictly DEVICE_ALARM with SOS code
+  // 2. Classify device alarms only inside DEVICE_ALARM. Legacy records without
+  // structured source/code are normalized above before this check.
   let eventType = 'abnormal'
   let icon = 'WARN'
 
-  const isSos = eventCode === 'SOS' || incidentType === 'SOS' ||
-    (eventSource === 'DEVICE_ALARM' && (warningType.includes('SOS') || warningType.includes('sos')))
-  const isFall = eventCode === 'FALL' || incidentType === 'FALL' ||
-    (eventSource === 'DEVICE_ALARM' && (warningType.includes('跌倒') || warningType.includes('fall')))
-  const isStatic = incidentType === 'STILL' || warningType.includes('静止') || warningType.includes('static')
+  const isDeviceAlarm = eventSource === 'DEVICE_ALARM'
+  const isSos = isDeviceAlarm && (
+    eventCode === 'SOS' ||
+    (!eventCode && (incidentType === 'SOS' || /SOS/i.test(warningType)))
+  )
+  const isFall = isDeviceAlarm && (
+    eventCode === 'FALL' ||
+    (!eventCode && (incidentType === 'FALL' || /跌倒|fall/i.test(warningType)))
+  )
+  const isStatic = isDeviceAlarm && (
+    ['STILL', 'STATIC'].includes(eventCode) ||
+    (!eventCode && (['STILL', 'STATIC'].includes(incidentType) || /静止|static/i.test(warningType)))
+  )
 
   if (isSos) {
     eventType = 'sos'
@@ -174,13 +202,13 @@ export function mapWarningToEvent(record) {
     }
   }
 
-  const backendStatus = record.status || (record.handled ? 'RESOLVED' : 'NEW')
+  const backendStatus = String(record.status || (record.handled ? 'RESOLVED' : 'NEW')).toUpperCase()
   const statusLabel = getEventStatusText(backendStatus)
 
   const slaConfigured = record.sla?.configured === true
-  const slaStatus = record.sla?.status || (slaConfigured ? 'ON_TIME' : 'NOT_CONFIGURED')
+  const slaStatus = String(record.sla?.status || (slaConfigured ? 'ON_TIME' : 'NOT_CONFIGURED')).toUpperCase()
 
-  const ownerStatus = record.owner?.status || (record.owner?.name ? 'ASSIGNED' : 'UNASSIGNED')
+  const ownerStatus = String(record.owner?.status || (record.owner?.name ? 'ASSIGNED' : 'UNASSIGNED')).toUpperCase()
   const ownerName = record.owner?.name || ''
   const ownerDisplay = ownerName || (record.owner?.status === 'UNASSIGNED' ? '未分派' : '未分派')
 
@@ -204,6 +232,7 @@ export function mapWarningToEvent(record) {
     dept: record.person?.department || record.deptName || record.dept_name || '',
     location: locationDisplay,
     time: formatEventAge(createdAt),
+    durationText: formatEventDuration(durationMinutes),
     occurredAt: createdAt,
     owner: ownerDisplay,
     ownerStatus,
@@ -669,4 +698,11 @@ function formatEventAge(value) {
   if (diffMinutes < 1) return '刚刚'
   if (diffMinutes < 60) return `${diffMinutes}分钟前`
   return `${Math.floor(diffMinutes / 60)}小时前`
+}
+
+function formatEventDuration(minutes) {
+  const value = Math.max(0, Number(minutes) || 0)
+  if (value < 1) return '刚触发'
+  if (value < 60) return `${value} MIN`
+  return `${Math.floor(value / 60)}H ${value % 60}M`
 }

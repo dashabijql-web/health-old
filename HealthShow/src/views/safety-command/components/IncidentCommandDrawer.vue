@@ -133,8 +133,21 @@ const visibleModel = computed({
   get: () => props.visible,
   set: (value) => emit('update:visible', value)
 })
-const severityLabel = computed(() => ({ CRITICAL: '特急', HIGH: '紧急', MEDIUM: '一般' }[incident.value?.severity] || '提示'))
-const severityTagType = computed(() => incident.value?.severity === 'CRITICAL' ? 'danger' : incident.value?.severity === 'HIGH' ? 'warning' : 'info')
+const severityLabel = computed(() => {
+  const sev = String(incident.value?.severity || props.event?.severity || '').toUpperCase()
+  if (sev === 'CRITICAL' || props.event?.level === 'critical') return '特急'
+  if (sev === 'HIGH' || props.event?.level === 'high') return '紧急'
+  if (sev === 'MEDIUM' || props.event?.level === 'medium') return '一般'
+  if (sev === 'LOW' || props.event?.level === 'low') return '轻微'
+  return '一般'
+})
+const severityTagType = computed(() => {
+  const sev = String(incident.value?.severity || props.event?.severity || '').toUpperCase()
+  if (sev === 'CRITICAL' || props.event?.level === 'critical') return 'danger'
+  if (sev === 'HIGH' || props.event?.level === 'high') return 'warning'
+  if (sev === 'MEDIUM' || props.event?.level === 'medium') return 'primary'
+  return 'info'
+})
 const statusLabel = computed(() => ({
   NEW: '待确认',
   ACKED: '已确认',

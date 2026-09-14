@@ -21,9 +21,12 @@
       <div v-if="departmentEvents.length" class="dept-incident-list">
         <article v-for="event in departmentEvents" :key="`${event.id}-${event.occurredAt}`" class="dept-incident-item">
           <button type="button" class="dept-incident-main" @click="$emit('show-event', event)">
-            <span class="dept-incident-title">{{ event.user || '未知人员' }} · {{ event.type || '预警' }}</span>
-            <span>{{ event.time || '刚刚' }} · {{ event.owner || '未分派' }}</span>
-            <span>{{ event.location || '未接入定位' }} · {{ event.slaStatus === 'OVERDUE' ? '已超时' : '处置中' }}</span>
+            <div class="dept-incident-title-row">
+              <span :class="['dept-incident-tag', `dept-tag-${event.level || 'medium'}`]">{{ eventLevelLabel(event) }}</span>
+              <span class="dept-incident-title">{{ event.user || '未知人员' }} · {{ event.type || '预警' }}</span>
+            </div>
+            <span>{{ event.time || '刚刚' }} · 责任人：{{ event.owner || '未分派' }}</span>
+            <span>位置：{{ event.location || '未接入定位' }} · 状态：{{ eventStatusLabel(event) }} · SLA：{{ eventSlaLabel(event) }}</span>
           </button>
           <button type="button" class="dept-incident-person" @click="$emit('show-profile', event)">健康画像</button>
           <button type="button" class="dept-incident-handle" @click="$emit('handle-event', event)">处置</button>
@@ -51,6 +54,9 @@ interface DepartmentEvent {
   level?: string
   owner?: string
   slaStatus?: string
+  sla?: string
+  status?: string
+  statusLabel?: string
   user?: string
   type?: string
   time?: string
@@ -78,9 +84,34 @@ const departmentTotal = computed(() => typeof props.department === 'object'
   ? Number(props.department?.warnings || props.department?.abnormal || 0)
   : departmentEvents.value.length)
 const departmentEvents = computed(() => props.events.filter((event) => (event.dept || '未分组') === departmentName.value))
-const criticalCount = computed(() => departmentEvents.value.filter((event) => ['critical', 'high'].includes(event.level || '')).length)
+const criticalCount = computed(() => departmentEvents.value.filter((event) => (event.level || '') === 'critical').length)
 const unassignedCount = computed(() => departmentEvents.value.filter((event) => !event.owner || event.owner === '未分派').length)
 const overdueCount = computed(() => departmentEvents.value.filter((event) => event.slaStatus === 'OVERDUE').length)
+
+const eventLevelLabel = (event: DepartmentEvent) => {
+  if (event.level === 'critical') return '特急'
+  if (event.level === 'high') return '紧急'
+  if (event.level === 'low') return '轻微'
+  return '一般'
+}
+
+const eventStatusLabel = (event: DepartmentEvent) => {
+  const status = String(event.status || '').toUpperCase()
+  return ({
+    NEW: '待确认',
+    ACKED: '已确认',
+    DISPATCHED: '已派遣',
+    PROCESSING: '处理中',
+    RESOLVED: '已处理',
+    FALSE_ALARM: '误报关闭'
+  }[status] || (event.statusLabel as string) || '待确认')
+}
+
+const eventSlaLabel = (event: DepartmentEvent) => {
+  if (event.slaStatus === 'OVERDUE') return '已超时'
+  if (event.sla && event.sla !== '未配置') return String(event.sla)
+  return '未配置'
+}
 </script>
 
 <style scoped lang="scss">
@@ -95,8 +126,14 @@ const overdueCount = computed(() => departmentEvents.value.filter((event) => eve
 .dept-incident-list { display: grid; gap: 8px; }
 .dept-incident-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 12px; border: 1px solid rgba(255,140,0,.2); border-radius: 8px; background: rgba(255,255,255,.025); }
 .dept-incident-main { min-width: 0; display: grid; gap: 5px; text-align: left; border: 0; background: transparent; color: #6e94b0; cursor: pointer; }
-.dept-incident-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #dff0ff; font-weight: 700; }
-.dept-incident-person, .dept-incident-handle { min-height: 32px; padding: 0 10px; border-radius: 5px; border: 1px solid rgba(0,200,255,.28); background: rgba(0,200,255,.07); color: #00c8ff; cursor: pointer; }
+.dept-incident-title-row { display: flex; align-items: center; gap: 8px; }
+.dept-incident-tag { font-size: 11px; padding: 2px 6px; border-radius: 3px; font-weight: 700; line-height: 1; }
+.dept-tag-critical { background: rgba(255,59,59,.22); color: #ff6b7b; border: 1px solid rgba(255,59,59,.35); }
+.dept-tag-high { background: rgba(255,140,0,.2); color: #ff9f43; border: 1px solid rgba(255,140,0,.32); }
+.dept-tag-medium { background: rgba(0,200,255,.15); color: #70dfff; border: 1px solid rgba(0,200,255,.28); }
+.dept-tag-low { background: rgba(0,230,118,.12); color: #00e676; border: 1px solid rgba(0,230,118,.25); }
+.dept-incident-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #dff0ff; font-weight: 700; font-size: 13px; }
+.dept-incident-person, .dept-incident-handle { min-height: 32px; padding: 0 10px; border-radius: 5px; border: 1px solid rgba(0,200,255,.28); background: rgba(0,200,255,.07); color: #00c8ff; cursor: pointer; font-weight: 600; font-size: 12px; }
 .dept-incident-handle { border-color: rgba(255,140,0,.3); color: #ff8c00; background: rgba(255,140,0,.08); }
 :global(.department-incident-drawer.el-drawer) {
   --el-bg-color: #071426;
