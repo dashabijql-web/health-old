@@ -1,0 +1,44 @@
+name: nightly-regression
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: [self-hosted, windows]
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Start Redis
+        shell: pwsh
+        run: |
+          Stop-Service Redis -ErrorAction SilentlyContinue
+          Get-Process redis-server -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Process -FilePath 'C:\Program Files\Redis\redis-server.exe' -ArgumentList '"C:\Program Files\Redis\redis.windows.conf"' -WindowStyle Hidden
+          $deadline = (Get-Date).AddSeconds(20)
+          do {
+            Start-Sleep -Seconds 1
+            $pong = & 'C:\Program Files\Redis\redis-cli.exe' -h 127.0.0.1 -p 6379 PING 2>$null
+            if ($pong -match '^PONG$') { break }
+          } until ((Get-Date) -ge $deadline)
+          if ($pong -ne 'PONG') { throw 'Redis did not start on 127.0.0.1:6379' }
+
+      - name: Run nightly backend regression
+        run: python scripts/run_backend_regression.py

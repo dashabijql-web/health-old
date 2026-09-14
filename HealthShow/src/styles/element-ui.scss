@@ -1,0 +1,368 @@
+// cover some element-ui styles
+
+.el-breadcrumb__inner,
+.el-breadcrumb__inner a {
+  font-weight: 400 !important;
+}
+
+.el-upload {
+  input[type="file"] {
+    display: none !important;
+  }
+}
+
+.el-upload__input {
+  display: none;
+}
+
+
+// to fixed https://github.com/ElemeFE/element/issues/2461
+.el-dialog {
+  transform: none;
+  left: 0;
+  position: relative;
+  margin: 0 auto;
+}
+
+// refine element ui upload
+.upload-container {
+  .el-upload {
+    width: 100%;
+
+    .el-upload-dragger {
+      width: 100%;
+      height: 200px;
+    }
+  }
+}
+
+// dropdown
+.el-dropdown-menu {
+  a {
+    display: block
+  }
+}
+
+// 导航栏头像下拉菜单深色主题
+html body .el-popper.user-dropdown {
+  background: #0d2847 !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+
+  .el-dropdown-menu__item {
+    color: #a8c5e6 !important;
+
+    &:not(.is-disabled):hover {
+      background: rgba(0, 212, 255, 0.1) !important;
+      color: #00d4ff !important;
+    }
+  }
+
+  .el-dropdown-menu__item--divided {
+    border-top-color: rgba(0, 212, 255, 0.2) !important;
+  }
+
+  .el-popper__arrow::before {
+    background: #0d2847 !important;
+    border-color: rgba(0, 212, 255, 0.3) !important;
+  }
+}
+
+// to fix el-date-picker css style
+.el-range-separator {
+  box-sizing: content-box;
+}
+
+// ===== Element Plus 2.x el-select 深色主题全局覆盖 =====
+// 用 html body 提高优先级，确保覆盖 EP 自己的样式
+html body {
+  // EP 2.4+ select 新版结构
+  .el-select__wrapper {
+    background: rgba(13, 40, 71, 0.8) !important;
+    background-color: rgba(13, 40, 71, 0.8) !important;
+    border: 1px solid #1a4d8f !important;
+    box-shadow: 0 0 0 1px #1a4d8f !important;
+    color: #ffffff !important;
+    &.is-focused {
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 0 1px #00d4ff !important;
+    }
+    .el-select__placeholder {
+      color: #5a7ba6 !important;
+    }
+    .el-select__selected-item,
+    .el-select__selected-item span {
+      color: #ffffff !important;
+    }
+    .el-select__caret,
+    .el-select__suffix .el-icon {
+      color: #00d4ff !important;
+    }
+  }
+
+  // EP 2.x select 下拉面板（teleport到body下）
+  .el-select__popper.el-popper {
+    background: #0d2847 !important;
+    border: 1px solid #1a4d8f !important;
+    .el-select-dropdown__item {
+      color: #ffffff !important;
+      &:hover,
+      &.is-hovering {
+        background: rgba(0, 212, 255, 0.1) !important;
+        color: #00d4ff !important;
+      }
+      &.is-selected {
+        color: #00d4ff !important;
+        background: rgba(0, 212, 255, 0.15) !important;
+      }
+    }
+    .el-scrollbar__bar {
+      .el-scrollbar__thumb {
+        background: rgba(0, 212, 255, 0.3) !important;
+      }
+    }
+  }
+
+  // 兼容旧版 EP（el-input__wrapper 包裹 select）
+  .el-select .el-input__wrapper {
+    background: rgba(13, 40, 71, 0.8) !important;
+    background-color: rgba(13, 40, 71, 0.8) !important;
+    box-shadow: 0 0 0 1px #1a4d8f !important;
+    &.is-focus {
+      box-shadow: 0 0 0 1px #00d4ff !important;
+    }
+    .el-input__inner {
+      color: #ffffff !important;
+      background: transparent !important;
+    }
+    .el-select__suffix .el-icon,
+    .el-input__suffix .el-icon {
+      color: #00d4ff !important;
+    }
+  }
+
+  // 统一 el-input__wrapper 深色（input框）
+  .el-input__wrapper {
+    background: rgba(13, 40, 71, 0.8) !important;
+    background-color: rgba(13, 40, 71, 0.8) !important;
+    box-shadow: 0 0 0 1px #1a4d8f !important;
+    &.is-focus {
+      box-shadow: 0 0 0 1px #00d4ff !important;
+    }
+    .el-input__inner {
+      color: #ffffff !important;
+      background: transparent !important;
+      &::placeholder {
+        color: #5a7ba6 !important;
+      }
+    }
+  }
+}
+
+// ===== Element Plus 默认按钮深色覆盖 =====
+html body {
+  .el-button {
+    background: rgba(13, 40, 71, 0.8) !important;
+    border-color: #1a4d8f !important;
+    color: #8ba6c8 !important;
+
+    &:hover {
+      background: rgba(26, 77, 143, 0.5) !important;
+      border-color: #00d4ff !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .el-button--primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    border-color: #00d4ff !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%) !important;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+    }
+  }
+
+  .el-button--danger {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+
+    &:hover {
+      box-shadow: 0 0 10px rgba(244, 67, 54, 0.3) !important;
+    }
+  }
+
+  .el-button--info {
+    background: rgba(80, 80, 100, 0.5) !important;
+    border-color: #6b7b94 !important;
+    color: #a8c5e6 !important;
+  }
+
+  .el-button.is-disabled,
+  .el-button.is-disabled:hover {
+    background: rgba(13, 40, 71, 0.4) !important;
+    border-color: #1a4d8f !important;
+    color: #3a5a7f !important;
+    cursor: not-allowed !important;
+  }
+}
+
+
+// ===== Element Plus 表格深色覆盖 =====
+html body {
+  .el-table {
+    background-color: transparent !important;
+    color: #ffffff !important;
+
+    &::before,
+    &::after {
+      display: none !important;
+    }
+
+    // 表头
+    .el-table__header-wrapper th,
+    .el-table__header th {
+      background-color: rgba(26, 77, 143, 0.5) !important;
+      color: #00d4ff !important;
+      border-color: #1a4d8f !important;
+    }
+
+    // 数据行
+    .el-table__body tr,
+    .el-table__body tr.el-table__row {
+      background-color: rgba(13, 40, 71, 0.6) !important;
+
+      &:nth-child(even) {
+        background-color: rgba(10, 30, 61, 0.7) !important;
+      }
+
+      &:hover > td,
+      &.hover-row > td {
+        background-color: rgba(0, 212, 255, 0.08) !important;
+      }
+    }
+
+    // 单元格
+    td {
+      background-color: transparent !important;
+      border-color: #1a4d8f !important;
+      color: #d0e4f7 !important;
+    }
+
+    // 空数据提示
+    .el-table__empty-block {
+      background-color: rgba(13, 40, 71, 0.6) !important;
+      .el-table__empty-text {
+        color: #5a7ba6 !important;
+      }
+    }
+
+    // stripe斑马纹
+    .el-table__body .el-table__row--striped td {
+      background-color: rgba(10, 30, 61, 0.7) !important;
+    }
+
+    // 滚动条
+    .el-scrollbar__bar .el-scrollbar__thumb {
+      background: rgba(0, 212, 255, 0.3) !important;
+    }
+
+    // checkbox列
+    .el-checkbox__inner {
+      background-color: rgba(13, 40, 71, 0.8) !important;
+      border-color: #1a4d8f !important;
+    }
+    .el-checkbox__input.is-checked .el-checkbox__inner {
+      background-color: #00d4ff !important;
+      border-color: #00d4ff !important;
+    }
+  }
+}
+
+
+// ===== Element Plus 分页深色覆盖 =====
+html body {
+  .el-pagination {
+    color: #8ba6c8 !important;
+    background: transparent !important;
+
+    // 上一页/下一页按钮
+    .btn-prev,
+    .btn-next {
+      background: rgba(13, 40, 71, 0.8) !important;
+      background-color: rgba(13, 40, 71, 0.8) !important;
+      border: 1px solid #1a4d8f !important;
+      color: #8ba6c8 !important;
+
+      &:hover {
+        color: #00d4ff !important;
+        border-color: #00d4ff !important;
+      }
+
+      &:disabled,
+      &.is-disabled {
+        background: rgba(13, 40, 71, 0.4) !important;
+        color: #3a5a7f !important;
+        border-color: #1a4d8f !important;
+        cursor: not-allowed !important;
+      }
+
+      .el-icon {
+        color: inherit !important;
+      }
+    }
+
+    // 页码数字按钮
+    .el-pager li {
+      background: rgba(13, 40, 71, 0.8) !important;
+      background-color: rgba(13, 40, 71, 0.8) !important;
+      border: 1px solid #1a4d8f !important;
+      color: #8ba6c8 !important;
+
+      &:hover {
+        color: #00d4ff !important;
+        border-color: #00d4ff !important;
+      }
+
+      &.is-active {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+        border-color: #00d4ff !important;
+        color: #00d4ff !important;
+      }
+    }
+
+    // 每页条数下拉框
+    .el-select__wrapper {
+      background: rgba(13, 40, 71, 0.8) !important;
+      background-color: rgba(13, 40, 71, 0.8) !important;
+      border: 1px solid #1a4d8f !important;
+      box-shadow: 0 0 0 1px #1a4d8f !important;
+      color: #8ba6c8 !important;
+
+      .el-select__placeholder,
+      .el-select__selected-item {
+        color: #8ba6c8 !important;
+      }
+      .el-select__caret {
+        color: #00d4ff !important;
+      }
+    }
+
+    // "共X条" 和 "前往" 文字
+    .el-pagination__total,
+    .el-pagination__jump {
+      color: #8ba6c8 !important;
+    }
+
+    // 跳页输入框
+    .el-pagination__editor .el-input__wrapper {
+      background: rgba(13, 40, 71, 0.8) !important;
+      box-shadow: 0 0 0 1px #1a4d8f !important;
+      .el-input__inner {
+        color: #ffffff !important;
+      }
+    }
+  }
+}

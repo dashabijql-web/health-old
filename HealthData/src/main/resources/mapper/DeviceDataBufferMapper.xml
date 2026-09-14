@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzkj.health.mapper.DeviceDataBufferMapper">
+
+    <resultMap id="BaseResultMap" type="com.xzkj.health.model.DeviceDataBuffer">
+        <id column="id" property="id"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="imei" property="imei"/>
+        <result column="data_type" property="dataType"/>
+        <result column="data_json" property="dataJson"/>
+        <result column="record_time" property="recordTime"/>
+        <result column="receive_time" property="receiveTime"/>
+        <result column="is_transferred" property="isTransferred"/>
+        <result column="transfer_time" property="transferTime"/>
+        <result column="transfer_to_user_id" property="transferToUserId"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+</mapper>

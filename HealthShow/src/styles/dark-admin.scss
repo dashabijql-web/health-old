@@ -1,0 +1,215 @@
+// ============================================================
+// Dark Admin Theme — Shared Variables & Mixins
+// Used by: org-management, personnel, alert, statistics pages
+// ============================================================
+
+// ── Color Palette ──
+$da-bg:         #0a0e27;
+$da-panel:      #141830;
+$da-panel-alt:  #1a1f3a;
+$da-border:     #232b4d;
+$da-border-light: #2d3561;
+$da-accent:     #00d4ff;
+$da-accent-dim: rgba(0, 212, 255, 0.06);
+$da-accent-border: rgba(0, 212, 255, 0.15);
+$da-accent-hover: rgba(0, 212, 255, 0.2);
+$da-text:       #c8d8e8;
+$da-text-bright:#e8f4ff;
+$da-text-dim:   #7eb8d4;
+$da-text-muted: #4a5578;
+
+// Status colors
+$da-success:    #38ef7d;
+$da-warning:    #ffd200;
+$da-danger:     #ff5252;
+$da-orange:     #ff9800;
+$da-info:       #4facfe;
+
+// Gradient presets
+$da-grad-primary:  linear-gradient(135deg, #667eea, #764ba2);
+$da-grad-success:  linear-gradient(135deg, #11998e, #38ef7d);
+$da-grad-warning:  linear-gradient(135deg, #f7971e, #ffd200);
+$da-grad-info:     linear-gradient(135deg, #4facfe, #00f2fe);
+$da-grad-danger:   linear-gradient(135deg, #ff5252, #f48fb1);
+$da-grad-header:   linear-gradient(135deg, #0d1b4b 0%, #1a2a6c 50%, #0d1b4b 100%);
+
+// ── Mixins ──
+
+@mixin da-container {
+  padding: 20px;
+  background: $da-bg;
+  min-height: 100vh;
+  color: $da-text;
+}
+
+@mixin da-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  margin-bottom: 16px;
+  background: $da-grad-header;
+  border: 1px solid #2a3f7a;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 100, 200, 0.2);
+}
+
+@mixin da-panel {
+  background: $da-panel;
+  border: 1px solid $da-border;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@mixin da-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: $da-panel;
+  border: 1px solid $da-border;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+  }
+}
+
+@mixin da-icon-wrap($size: 52px) {
+  width: $size;
+  height: $size;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+// ── Element Plus Deep Overrides ──
+
+@mixin da-el-table {
+  :deep(.el-table) {
+    background: transparent;
+    color: $da-text;
+    --el-table-border-color: #{$da-border};
+    --el-table-row-hover-bg-color: #1e2545;
+    th.el-table__cell { border-bottom-color: $da-border !important; }
+    td.el-table__cell { border-bottom-color: #1e2545 !important; }
+    .el-table__row--striped td { background: #171d38 !important; }
+    tr:hover > td { background: #1e2545 !important; }
+  }
+}
+
+@mixin da-el-pagination {
+  :deep(.el-pagination) {
+    --el-pagination-bg-color: #{$da-panel-alt};
+    --el-pagination-text-color: #{$da-text-dim};
+    --el-pagination-button-color: #{$da-text-dim};
+    --el-pagination-button-bg-color: #{$da-panel-alt};
+    --el-pagination-button-disabled-color: #3a4060;
+    --el-pagination-button-disabled-bg-color: #{$da-panel};
+    --el-pagination-hover-color: #{$da-accent};
+    --el-color-primary: #{$da-accent};
+  }
+}
+
+@mixin da-el-input {
+  :deep(.el-input__wrapper) {
+    background: $da-panel-alt;
+    box-shadow: 0 0 0 1px $da-border-light inset;
+    &:hover { box-shadow: 0 0 0 1px $da-accent inset; }
+  }
+  :deep(.el-input__inner) { color: $da-text; }
+  :deep(.el-input__prefix) { color: $da-text-dim; }
+}
+
+@mixin da-el-select {
+  :deep(.el-select__wrapper) {
+    background: $da-panel-alt;
+    box-shadow: 0 0 0 1px $da-border-light inset;
+    color: $da-text;
+    &:hover { box-shadow: 0 0 0 1px $da-accent inset; }
+  }
+}
+
+@mixin da-el-textarea {
+  :deep(.el-textarea__inner) {
+    background: $da-panel-alt;
+    color: $da-text;
+    box-shadow: 0 0 0 1px $da-border-light inset;
+    &:hover { box-shadow: 0 0 0 1px $da-accent inset; }
+  }
+}
+
+@mixin da-el-form {
+  :deep(.el-form-item__label) { color: $da-text-dim; }
+  :deep(.el-radio__label) { color: $da-text; }
+  :deep(.el-switch__label) { color: $da-text-dim; }
+}
+
+@mixin da-el-dialog {
+  :deep(.el-dialog) {
+    background: $da-panel;
+    border: 1px solid $da-border-light;
+    border-radius: 12px;
+    .el-dialog__header { border-bottom: 1px solid $da-border; padding-bottom: 14px; }
+    .el-dialog__title { color: $da-text-bright; font-weight: 600; }
+    .el-dialog__headerbtn .el-dialog__close { color: $da-text-dim; &:hover { color: $da-accent; } }
+    .el-dialog__body { padding: 16px 24px 24px; }
+    .el-dialog__footer { border-top: 1px solid $da-border; padding-top: 14px; }
+  }
+}
+
+@mixin da-el-drawer {
+  :deep(.el-drawer) {
+    background: $da-panel;
+    .el-drawer__header { border-bottom: 1px solid $da-border; color: $da-text-bright; }
+    .el-drawer__body { padding: 16px; color: $da-text; }
+  }
+}
+
+@mixin da-el-descriptions {
+  :deep(.el-descriptions) {
+    --el-descriptions-item-bordered-label-background: #1e2545;
+    --el-descriptions-table-border: 1px solid #{$da-border-light};
+    .el-descriptions__label { color: $da-text-dim; font-weight: 500; }
+    .el-descriptions__content { color: $da-text; background: $da-panel-alt; }
+  }
+}
+
+@mixin da-el-tree {
+  :deep(.el-tree) {
+    background: transparent;
+    color: $da-text;
+    .el-tree-node__content:hover { background: rgba(0, 212, 255, 0.06); }
+    .el-tree-node.is-current > .el-tree-node__content { background: rgba(0, 212, 255, 0.12); color: $da-accent; }
+  }
+}
+
+@mixin da-el-date-picker {
+  :deep(.el-date-editor) {
+    --el-input-bg-color: #{$da-panel-alt};
+    --el-input-border-color: #{$da-border-light};
+    --el-input-text-color: #{$da-text};
+    --el-input-hover-border-color: #{$da-accent};
+  }
+}
+
+// ── Compound Mixin: All Element Plus overrides ──
+
+@mixin da-el-overrides {
+  @include da-el-table;
+  @include da-el-pagination;
+  @include da-el-input;
+  @include da-el-select;
+  @include da-el-textarea;
+  @include da-el-form;
+  @include da-el-dialog;
+  @include da-el-drawer;
+  @include da-el-descriptions;
+  @include da-el-date-picker;
+}

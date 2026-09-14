@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <meta name="description" content="职业健康监测管理系统 - 实时监测、预警管理、数据分析" />
+  <meta name="theme-color" content="#0d2847" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- iOS PWA 支持 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="健康监测" />
+  <link rel="apple-touch-icon" href="/pwa-192.png" />
+  <!-- 图标 -->
+  <link rel="icon" type="image/png" href="/pwa-192.png" />
+  <title>职业健康监测管理系统</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    (function () {
+      var isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      if (!isLocalHost || !('serviceWorker' in navigator)) return
+
+      window.__HEALTH_DEV_SW_CLEANUP__ = (async function () {
+        try {
+          var registrations = await navigator.serviceWorker.getRegistrations()
+          if (registrations.length) {
+            await Promise.all(registrations.map(function (registration) {
+              return registration.unregister().catch(function () { return false })
+            }))
+          }
+
+          if ('caches' in window) {
+            var cacheKeys = await caches.keys()
+            await Promise.all(cacheKeys.map(function (key) {
+              return caches.delete(key).catch(function () { return false })
+            }))
+          }
+
+          if (navigator.serviceWorker.controller && !window.sessionStorage.getItem('__health_dev_sw_reset__')) {
+            window.sessionStorage.setItem('__health_dev_sw_reset__', '1')
+            window.location.reload()
+            // Do not block app bootstrap forever while the reload is pending.
+            // The reloaded document will run the cleanup again and continue normally.
+            return
+          }
+        } catch (error) {
+          console.warn('[health-dev-sw-cleanup:index] failed to clear local service worker state', error)
+        }
+      })()
+    })()
+  </script>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

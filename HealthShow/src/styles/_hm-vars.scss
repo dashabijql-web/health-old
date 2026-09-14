@@ -1,0 +1,9 @@
+// Health Monitor 共享颜色变量
+// 使用 !default 允许各页面在 @import 前覆盖特定值
+$bg:     var(--bg-root) !default;
+$panel:  var(--bg-surface) !default;
+$border: var(--border-soft) !default;
+$accent: var(--accent-primary) !default;
+$text:   var(--text-primary) !default;
+$dim:    var(--text-secondary) !default;
+$white:  var(--text-strong) !default;

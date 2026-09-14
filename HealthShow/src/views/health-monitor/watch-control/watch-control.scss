@@ -1,0 +1,477 @@
+.wc-root {
+  min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #101820;
+  color: #edf5f8;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.wc-header,
+.wc-target-panel,
+.wc-device-panel,
+.wc-command-panel,
+.wc-log-card {
+  border: 1px solid rgba(119, 154, 165, 0.22);
+  background: rgba(18, 31, 40, 0.94);
+  border-radius: 8px;
+}
+
+.wc-header,
+.wc-target-panel {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.wc-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.wc-subtitle {
+  margin: 4px 0 0;
+  color: #a7bac2;
+  font-size: 12px;
+}
+
+.wc-header-actions,
+.wc-manual,
+.wc-target-meta,
+.wc-command-meta,
+.wc-command-controls,
+.wc-inline-inputs,
+.wc-block-head,
+.wc-log-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wc-refresh-time,
+.wc-target-imei,
+.wc-log-code,
+.wc-log-time,
+.wc-log-raw {
+  font-family: Consolas, Monaco, monospace;
+}
+
+.wc-refresh-time {
+  min-width: 74px;
+  color: #a7bac2;
+  font-size: 13px;
+}
+
+.wc-target-title,
+.wc-command-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.wc-target-meta {
+  margin-top: 8px;
+  color: #bfd1d6;
+  font-size: 13px;
+}
+
+.wc-target-imei {
+  color: #7dd3fc;
+  font-weight: 700;
+}
+
+.wc-manual-input {
+  width: 240px;
+}
+
+.wc-content {
+  flex: 1;
+  min-height: 720px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 12px;
+}
+
+.wc-left {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 280px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.wc-device-panel,
+.wc-command-panel,
+.wc-log-card {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.wc-section-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wc-section-head h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.wc-section-head p {
+  margin: 4px 0 0;
+  color: #a7bac2;
+  font-size: 12px;
+}
+
+.wc-tabs {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.wc-tabs .el-tabs__content {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.wc-tabs .el-tab-pane {
+  min-height: 100%;
+}
+
+.wc-command-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.wc-command-row,
+.wc-command-block {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(13, 24, 31, 0.76);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.wc-command-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wc-danger-row {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(55, 26, 30, 0.45);
+}
+
+.wc-command-meta {
+  margin-top: 8px;
+  color: #a7bac2;
+  font-size: 12px;
+}
+
+.wc-command-controls {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  min-width: 280px;
+}
+
+.wc-command-controls .el-input-number {
+  width: 112px;
+}
+
+.wc-time-controls .el-input {
+  width: 78px;
+}
+
+.wc-text-controls {
+  min-width: min(520px, 100%);
+}
+
+.wc-text-controls .el-input {
+  width: 360px;
+}
+
+.wc-separator {
+  color: #a7bac2;
+  font-weight: 700;
+}
+
+.wc-block-head {
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.wc-inline-inputs {
+  align-items: stretch;
+}
+
+.wc-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wc-contact-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.wc-contact-row > span {
+  color: #7dd3fc;
+  font-family: Consolas, Monaco, monospace;
+  font-weight: 700;
+}
+
+.wc-log-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wc-log-item {
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 6px;
+  background: rgba(9, 18, 24, 0.78);
+}
+
+.wc-log-top {
+  margin-bottom: 8px;
+}
+
+.wc-log-code {
+  color: #7dd3fc;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wc-log-meaning {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: #c9d7dc;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wc-log-time {
+  color: #a7bac2;
+  font-size: 12px;
+}
+
+.wc-log-raw {
+  display: block;
+  color: #edf5f8;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.wc-root .el-table {
+  flex: 1;
+  min-height: 0;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: rgba(11, 23, 31, 0.86);
+  --el-table-header-bg-color: rgba(26, 43, 52, 0.96);
+  --el-table-header-text-color: #e2edf1;
+  --el-table-text-color: #e6f0f3;
+  --el-table-row-hover-bg-color: rgba(30, 121, 143, 0.2);
+  --el-table-current-row-bg-color: rgba(30, 121, 143, 0.3);
+  --el-table-border-color: rgba(148, 163, 184, 0.18);
+}
+
+.wc-root .el-input__wrapper,
+.wc-root .el-input-number__decrease,
+.wc-root .el-input-number__increase {
+  background: rgba(8, 17, 23, 0.9);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.22) inset;
+}
+
+.wc-root .el-input__inner {
+  color: #edf5f8;
+}
+
+.wc-root .el-tabs__item {
+  color: #a7bac2;
+}
+
+.wc-root .el-tabs__item.is-active {
+  color: #7dd3fc;
+}
+
+.wc-command-confirm.el-message-box {
+  --el-messagebox-width: 440px;
+  --el-messagebox-border-radius: 8px;
+  --el-messagebox-padding-primary: 18px;
+  --el-messagebox-title-color: #f3f8ff;
+  --el-messagebox-content-color: #b8cbd4;
+  background: #101f2a;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.56), 0 0 0 1px rgba(125, 211, 252, 0.06);
+}
+
+.wc-command-confirm .el-message-box__header {
+  min-height: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.wc-command-confirm .el-message-box__title {
+  font-size: 17px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+.wc-command-confirm .el-message-box__headerbtn {
+  top: 8px;
+  right: 8px;
+  border-radius: 6px;
+}
+
+.wc-command-confirm .el-message-box__headerbtn:hover {
+  background: rgba(125, 211, 252, 0.08);
+}
+
+.wc-command-confirm .el-message-box__headerbtn .el-message-box__close {
+  color: #8fa7b3;
+}
+
+.wc-command-confirm .el-message-box__headerbtn:hover .el-message-box__close {
+  color: #7dd3fc;
+}
+
+.wc-command-confirm .el-message-box__content {
+  padding-top: 18px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.wc-command-confirm .el-message-box__container {
+  align-items: flex-start;
+}
+
+.wc-command-confirm .el-message-box__status {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #f59e0b;
+}
+
+.wc-command-confirm .el-message-box__message {
+  color: #c9d7dc;
+  word-break: break-word;
+}
+
+.wc-command-confirm .el-message-box__btns {
+  gap: 10px;
+  padding-top: 20px;
+}
+
+.wc-command-confirm .el-message-box__btns .el-button {
+  min-width: 88px;
+  margin-left: 0;
+}
+
+html body .wc-command-confirm .el-button.wc-command-confirm__danger {
+  background: #b4232c !important;
+  border-color: #ef5861 !important;
+  color: #fff !important;
+}
+
+html body .wc-command-confirm .el-button.wc-command-confirm__danger:hover {
+  background: #c82d36 !important;
+  border-color: #ff7a82 !important;
+  box-shadow: 0 0 14px rgba(239, 88, 97, 0.24) !important;
+}
+
+@media (max-width: 480px) {
+  .wc-command-confirm.el-message-box {
+    --el-messagebox-padding-primary: 16px;
+  }
+
+  .wc-command-confirm .el-message-box__btns .el-button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1280px) {
+  .wc-content {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+
+  .wc-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
+  .wc-root {
+    min-height: calc(100vh - 50px);
+    padding-bottom: 72px;
+  }
+
+  .wc-header,
+  .wc-target-panel,
+  .wc-header-actions,
+  .wc-manual,
+  .wc-target-meta,
+  .wc-command-row,
+  .wc-command-controls,
+  .wc-inline-inputs,
+  .wc-block-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wc-content,
+  .wc-left {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wc-content {
+    min-height: 0;
+  }
+
+  .wc-device-panel {
+    min-height: 520px;
+  }
+
+  .wc-command-panel,
+  .wc-log-card {
+    min-height: 520px;
+  }
+
+  .wc-manual-input,
+  .wc-text-controls,
+  .wc-text-controls .el-input,
+  .wc-command-controls .el-input-number,
+  .wc-time-controls .el-input {
+    width: 100%;
+  }
+}

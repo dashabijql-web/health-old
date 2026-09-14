@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0a1e3d"/>
+  <rect x="32" y="32" width="448" height="448" rx="60" fill="#0d2847"/>
+  <polyline points="56,256 120,256 150,160 180,352 210,200 240,256 280,256 310,100 340,380 370,220 400,256 456,256"
+    fill="none" stroke="#00d4ff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="440" text-anchor="middle" fill="#00d4ff" font-family="Arial" font-size="52" font-weight="bold">健康监测</text>
+</svg>

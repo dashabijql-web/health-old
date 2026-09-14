@@ -1,0 +1,330 @@
+// Health-Monitor 共享布局 mixin
+// 用法：@include hm-body('hr'); @include hm-panel('hr'); 等
+// 所有 mixin 以页面前缀 $p 为参数，生成 .#{$p}-xxx 类名
+
+// 共享脉冲动画 — 各页面 .xx-live-dot 引用此 keyframes
+@keyframes hmPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.75); }
+}
+
+@mixin hm-body($p, $gap: 10px, $pad: 10px) {
+  .#{$p}-bd {
+    flex: 1; display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    gap: $gap; padding: $pad;
+    overflow: hidden; min-height: 0;
+  }
+}
+
+@mixin hm-main($p, $gap: 10px) {
+  .#{$p}-main {
+    flex: 1; display: flex; flex-direction: column; gap: $gap; min-width: 0;
+    overflow-y: auto; overflow-x: hidden;
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 2px; }
+    &::-webkit-scrollbar-track { background: rgba(0,212,255,0.05); }
+  }
+}
+
+@mixin hm-panel($p) {
+  .#{$p}-panel {
+    background: $panel; border: 1px solid $border; border-radius: 10px;
+    display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(8px);
+  }
+  .#{$p}-ph-title { font-size: 13px; font-weight: 600; color: $white; letter-spacing: 1px; }
+  .#{$p}-pc { flex: 1; min-height: 0; padding: 6px; }
+  .#{$p}-rt-total { margin-left: auto; font-size: 11px; color: $dim; }
+  .#{$p}-ph-legend { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .#{$p}-leg-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .#{$p}-leg-txt { font-size: 11px; color: $dim; }
+  .#{$p}-trend-tags { margin-left: 12px; display: flex; gap: 10px; }
+  .#{$p}-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; border: 1px solid; }
+}
+
+@mixin hm-overview($p) {
+  .#{$p}-overview-body {
+    flex: 1; min-height: 0;
+    display: flex; align-items: center; padding: 8px 14px; gap: 14px;
+  }
+  .#{$p}-gauge-wrap  { width: 180px; height: 170px; flex-shrink: 0; position: relative; }
+  .#{$p}-gauge-chart { width: 100%; height: 100%; }
+  .#{$p}-gauge-center {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    text-align: center; pointer-events: none;
+  }
+  .#{$p}-gauge-val { font-size: 32px; font-weight: 700; color: $accent; font-family: 'Consolas', monospace; line-height: 1; }
+  .#{$p}-gauge-sub { font-size: 11px; color: $dim; margin-top: 2px; white-space: nowrap; }
+}
+
+@mixin hm-kpi-cards($p) {
+  .#{$p}-kpi-cards {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 7px;
+  }
+  .#{$p}-kpi-card {
+    background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.1);
+    border-radius: 7px; padding: 7px 10px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .#{$p}-kpi-card-val   { font-size: 18px; font-weight: 700; font-family: 'Consolas', monospace; line-height: 1.1; }
+  .#{$p}-kpi-card-unit  { font-size: 10px; color: $dim; font-weight: normal; font-family: sans-serif; margin-left: 1px; }
+  .#{$p}-kpi-card-label { font-size: 10px; color: $dim; margin-top: 2px; }
+}
+
+@mixin hm-range-info($p) {
+  .#{$p}-range-info {
+    width: 168px; flex-shrink: 0;
+    background: rgba(0,212,255,0.03); border: 1px solid rgba(0,212,255,0.1);
+    border-radius: 8px; padding: 8px 10px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .#{$p}-range-title { font-size: 11px; color: $dim; font-weight: 600; margin-bottom: 3px; letter-spacing: 0.5px; }
+  .#{$p}-range-item  { display: flex; align-items: center; gap: 6px; }
+  .#{$p}-range-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .#{$p}-range-name  { font-size: 10px; width: 38px; flex-shrink: 0; }
+  .#{$p}-range-val   { font-size: 10px; color: $dim; font-family: 'Consolas', monospace; }
+}
+
+@mixin hm-pulse($p, $dur: 2s) {
+  .#{$p}-live-dot { animation: hmPulse $dur ease-in-out infinite; }
+}
+
+@mixin hm-empty($p) {
+  .#{$p}-top5-empty {
+    padding: 20px 0; text-align: center; font-size: 12px;
+    color: rgba(126,184,247,0.5);
+  }
+  .#{$p}-anomaly-empty {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: rgba(82,196,26,0.8); padding: 10px;
+  }
+}
+
+@mixin hm-rt-row($p, $cols: 64px 46px 40px 1fr, $hover: rgba(0,212,255,0.055)) {
+  .#{$p}-rt-row {
+    display: grid; grid-template-columns: $cols;
+    gap: 6px; padding: 6px 4px; margin-bottom: 1px;
+    border-radius: 5px; align-items: center;
+    border-left: 2px solid transparent;
+    transition: background 0.2s;
+    &:hover { background: $hover; }
+  }
+  .#{$p}-rt-name { font-size: 12px; color: $white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .#{$p}-rt-val  { font-size: 14px; font-weight: 700; font-family: 'Consolas', monospace; }
+  .#{$p}-rt-time { font-size: 10px; color: $dim; }
+}
+
+@mixin hm-pagination($p) {
+  .#{$p}-rt-pg {
+    height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    border-top: 1px solid rgba(0,212,255,0.1);
+  }
+  .#{$p}-pg-btn {
+    height: 22px; padding: 0 7px;
+    background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.18);
+    border-radius: 3px; color: $accent; font-size: 12px; cursor: pointer;
+    transition: background 0.2s;
+    &:hover:not(:disabled) { background: rgba(0,212,255,0.16); }
+    &:disabled { opacity: 0.28; cursor: not-allowed; }
+  }
+  .#{$p}-pg-info { font-size: 11px; color: $dim; margin: 0 4px; }
+}
+
+// 健康监测各分析页面共享移动端适配 mixin
+// 用法：@include hm-mobile('bo'); （在各页面 style 末尾调用）
+@mixin hm-mobile($p) {
+  @media (max-width: 768px) {
+    /* 根容器改为可滚动 */
+    .#{$p}-root {
+      height: auto !important;
+      min-height: calc(100vh - 50px);
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      padding-bottom: 64px;
+    }
+
+    /* Header 紧凑，KPI 横向滚动 */
+    .#{$p}-hd {
+      height: auto;
+      flex-wrap: wrap;
+      padding: 8px 12px;
+      gap: 6px;
+    }
+    .#{$p}-hd-kpis {
+      order: 3;
+      width: 100%;
+      flex: 0 0 100% !important;
+      overflow-x: auto;
+      justify-content: flex-start;
+      padding-bottom: 2px;
+      &::-webkit-scrollbar { height: 2px; }
+      &::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); }
+    }
+    .#{$p}-kpi { padding: 0 14px; }
+    .#{$p}-period-tabs { order: 2; }
+    .#{$p}-hd-time, .hm-export-btn { display: none; }
+
+    /* Body 竖向堆叠 */
+    .#{$p}-bd {
+      display: flex !important;
+      flex-direction: column !important;
+      grid-template-columns: unset !important;
+      overflow: visible !important;
+      height: auto !important;
+      padding: 8px 10px;
+    }
+
+    /* 左侧 Aside 全宽 */
+    .#{$p}-aside {
+      width: 100% !important;
+      height: auto;
+      gap: 8px;
+      order: 4;
+    }
+    .#{$p}-aside-top { height: auto !important; min-height: 180px; }
+    .#{$p}-aside-bot { flex: none; }
+    .#{$p}-aside-bot .#{$p}-pc { height: 260px; }
+
+    /* 中间 Main 自然高度 */
+    .#{$p}-main {
+      overflow: visible !important;
+      height: auto;
+      order: 1;
+    }
+
+    /* Hero 区域竖向 */
+    .#{$p}-hero {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+    .#{$p}-zone-cards {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* 图表行竖向 */
+    .#{$p}-charts-row {
+      flex-direction: column !important;
+      height: auto !important;
+      order: 3;
+    }
+
+    .#{$p}-hero { order: 2; }
+    .#{$p}-panel-anomaly { order: 1; min-height: 300px; }
+    .#{$p}-panel-trend,
+    .#{$p}-panel-hourly {
+      flex: none !important;
+      height: 220px;
+      min-height: 220px;
+    }
+    .#{$p}-panel-trend .#{$p}-pc,
+    .#{$p}-panel-hourly .#{$p}-pc { height: 180px; }
+    .#{$p}-scope-card { width: 100%; min-height: 104px; }
+
+    /* 弹窗宽度 */
+    :deep(.el-dialog) { width: 95% !important; }
+  }
+}
+
+// ── 新版布局 mixin ──
+
+@mixin hm-hero-zone($p) {
+  .#{$p}-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 18px;
+    background: $panel;
+    border: 1px solid $border;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
+  }
+}
+
+@mixin hm-scope-card($p) {
+  .#{$p}-scope-card {
+    width: 180px;
+    min-height: 126px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 16px;
+    border: 1px solid rgba(0,212,255,0.16);
+    border-radius: 8px;
+    background: rgba(0,212,255,0.035);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    &:hover, &:focus-visible { background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.42); box-shadow: 0 0 14px rgba(0,212,255,0.1); outline: none; }
+  }
+  .#{$p}-scope-label { font-size: 11px; color: $dim; }
+  .#{$p}-scope-value {
+    margin-top: 4px;
+    font-size: 30px;
+    line-height: 1;
+    font-family: 'Consolas', monospace;
+    color: $accent;
+    em { margin-left: 3px; font-size: 12px; font-style: normal; color: $dim; }
+  }
+  .#{$p}-scope-note { margin-top: 8px; font-size: 10px; color: $dim; line-height: 1.5; }
+  .#{$p}-scope-time { margin-top: 3px; font-size: 10px; color: $accent; }
+}
+
+@mixin hm-zone-cards($p) {
+  .#{$p}-zone-cards {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-self: stretch;
+  }
+  .#{$p}-zone-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+    &:hover, &:focus-visible { background: rgba(255,255,255,0.08); outline: none; }
+  }
+  .#{$p}-zone-icon {
+    font-size: 16px; margin-bottom: 2px;
+  }
+  .#{$p}-zone-count {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Consolas', monospace;
+    line-height: 1.1;
+    em { font-size: 12px; font-style: normal; color: #8ba6c8; margin-left: 2px; }
+  }
+  .#{$p}-zone-label { font-size: 13px; font-weight: 600; color: $white; }
+  .#{$p}-zone-range { font-size: 10px; color: $dim; }
+  .#{$p}-zone-pct-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .#{$p}-zone-pct-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+    min-width: 0;
+  }
+}
+
+@mixin hm-charts-row($p) {
+  .#{$p}-charts-row {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    height: 220px;
+  }
+}

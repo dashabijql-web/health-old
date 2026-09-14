@@ -1,0 +1,36 @@
+name: backend-ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run CI-safe backend regression
+        env:
+          CI: "true"
+          HEALTH_SKIP_DB_CHECK: "true"
+          HEALTH_SKIP_REDIS_PROBE: "true"
+        run: python scripts/run_backend_regression.py

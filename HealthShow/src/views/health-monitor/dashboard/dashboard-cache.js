@@ -1,0 +1,20 @@
+export const dashboardCache = {
+  preShiftFetchedAt: 0,
+  preShiftData: null,
+  deptDataFetchedAt: 0,
+  deptDataPeriodKey: '',
+  deptDataList: null,
+  deptPersonStatsList: null,
+  warningDistFetchedAt: 0,
+  warningDistPeriodKey: '',
+  warningDistData: null,
+  trendDailyFetchedAt: 0,
+  trendDailyDays: 0,
+  trendDailyData: null,
+  kpiFetchedAt: 0,
+  kpiTodayWarnings: 0,
+  kpiYesterdayWarnings: 0,
+  kpiOnline: 0,
+  kpiTotal: 0,
+  kpiCacheDate: ''
+}

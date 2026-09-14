@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 34px; font-weight: 700; fill: #172033; }
+      .label { font-family: Arial, sans-serif; font-size: 22px; font-weight: 700; fill: #172033; }
+      .small { font-family: Arial, sans-serif; font-size: 17px; fill: #172033; }
+      .tiny { font-family: Arial, sans-serif; font-size: 15px; fill: #172033; }
+      .pin { fill: #f8fafc; stroke: #344054; stroke-width: 2; }
+      .board { fill: #142d5c; stroke: #0b1730; stroke-width: 3; }
+      .sensor { fill: #0b7f66; stroke: #075746; stroke-width: 3; }
+      .oled { fill: #0f766e; stroke: #064e3b; stroke-width: 3; }
+      .screen { fill: #111827; stroke: #334155; stroke-width: 2; }
+      .bread { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 3; }
+      .rail-red { stroke: #e11d48; stroke-width: 12; stroke-linecap: round; fill: none; }
+      .rail-blue { stroke: #2563eb; stroke-width: 12; stroke-linecap: round; fill: none; }
+      .wire-red { stroke: #ef4444; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-black { stroke: #111827; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-sda { stroke: #2563eb; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-scl { stroke: #f59e0b; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .note { fill: #fff7ed; stroke: #fb923c; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1000" fill="#ffffff"/>
+  <text x="60" y="60" class="title">ESP32 健康手表 Wi-Fi 原型接线图（先不要接电池和 TP4056）</text>
+
+  <rect x="70" y="120" width="1030" height="620" rx="18" class="bread"/>
+  <path d="M130 165 L1040 165" class="rail-red"/>
+  <path d="M130 205 L1040 205" class="rail-blue"/>
+  <path d="M130 655 L1040 655" class="rail-red"/>
+  <path d="M130 695 L1040 695" class="rail-blue"/>
+  <text x="90" y="172" class="label" fill="#e11d48">+</text>
+  <text x="90" y="212" class="label" fill="#2563eb">-</text>
+  <text x="1050" y="172" class="label" fill="#e11d48">3V3</text>
+  <text x="1050" y="212" class="label" fill="#2563eb">GND</text>
+  <text x="430" y="445" class="small">面包板中间凹槽</text>
+  <line x1="585" y1="245" x2="585" y2="620" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+
+  <rect x="1150" y="240" width="310" height="430" rx="20" class="board"/>
+  <text x="1210" y="285" class="label" fill="#ffffff">ESP32 开发板</text>
+  <rect x="1220" y="310" width="130" height="50" rx="8" fill="#d1d5db"/>
+  <text x="1235" y="342" class="small">USB 供电/烧录</text>
+
+  <circle cx="1165" cy="395" r="13" class="pin"/>
+  <text x="1190" y="402" class="small" fill="#ffffff">3V3</text>
+  <circle cx="1165" cy="445" r="13" class="pin"/>
+  <text x="1190" y="452" class="small" fill="#ffffff">GND</text>
+  <circle cx="1165" cy="495" r="13" class="pin"/>
+  <text x="1190" y="502" class="small" fill="#ffffff">GPIO21 / SDA</text>
+  <circle cx="1165" cy="545" r="13" class="pin"/>
+  <text x="1190" y="552" class="small" fill="#ffffff">GPIO22 / SCL</text>
+
+  <rect x="150" y="270" width="250" height="190" rx="14" class="oled"/>
+  <rect x="177" y="310" width="196" height="88" rx="8" class="screen"/>
+  <text x="205" y="355" class="small" fill="#e5e7eb">OLED</text>
+  <circle cx="180" cy="435" r="10" class="pin"/>
+  <text x="195" y="441" class="tiny" fill="#ffffff">GND</text>
+  <circle cx="240" cy="435" r="10" class="pin"/>
+  <text x="255" y="441" class="tiny" fill="#ffffff">VCC</text>
+  <circle cx="300" cy="435" r="10" class="pin"/>
+  <text x="315" y="441" class="tiny" fill="#ffffff">SCL</text>
+  <circle cx="360" cy="435" r="10" class="pin"/>
+  <text x="375" y="441" class="tiny" fill="#ffffff">SDA</text>
+
+  <rect x="475" y="285" width="260" height="150" rx="14" class="sensor"/>
+  <text x="535" y="325" class="label" fill="#ffffff">MPU6050</text>
+  <circle cx="510" cy="405" r="10" class="pin"/>
+  <text x="492" y="388" class="tiny" fill="#ffffff">VCC</text>
+  <circle cx="560" cy="405" r="10" class="pin"/>
+  <text x="545" y="388" class="tiny" fill="#ffffff">GND</text>
+  <circle cx="610" cy="405" r="10" class="pin"/>
+  <text x="594" y="388" class="tiny" fill="#ffffff">SCL</text>
+  <circle cx="660" cy="405" r="10" class="pin"/>
+  <text x="644" y="388" class="tiny" fill="#ffffff">SDA</text>
+
+  <rect x="790" y="285" width="260" height="150" rx="14" class="sensor"/>
+  <text x="840" y="325" class="label" fill="#ffffff">MAX30102</text>
+  <circle cx="830" cy="405" r="10" class="pin"/>
+  <text x="813" y="388" class="tiny" fill="#ffffff">VIN</text>
+  <circle cx="880" cy="405" r="10" class="pin"/>
+  <text x="865" y="388" class="tiny" fill="#ffffff">GND</text>
+  <circle cx="930" cy="405" r="10" class="pin"/>
+  <text x="914" y="388" class="tiny" fill="#ffffff">SCL</text>
+  <circle cx="980" cy="405" r="10" class="pin"/>
+  <text x="964" y="388" class="tiny" fill="#ffffff">SDA</text>
+
+  <!-- ESP32 to rails -->
+  <path d="M1165 395 C1080 360 1080 165 1040 165" class="wire-red"/>
+  <path d="M1165 445 C1080 470 1080 205 1040 205" class="wire-black"/>
+
+  <!-- Power from rails to modules -->
+  <path d="M240 435 C240 210 240 165 240 165" class="wire-red"/>
+  <path d="M180 435 C180 245 180 205 180 205" class="wire-black"/>
+  <path d="M510 405 C510 220 510 165 510 165" class="wire-red"/>
+  <path d="M560 405 C560 250 560 205 560 205" class="wire-black"/>
+  <path d="M830 405 C830 225 830 165 830 165" class="wire-red"/>
+  <path d="M880 405 C880 250 880 205 880 205" class="wire-black"/>
+
+  <!-- SDA bus -->
+  <path d="M1165 495 C1070 525 1010 535 980 405" class="wire-sda"/>
+  <path d="M980 405 C860 515 760 515 660 405" class="wire-sda"/>
+  <path d="M660 405 C545 520 455 520 360 435" class="wire-sda"/>
+
+  <!-- SCL bus -->
+  <path d="M1165 545 C1060 610 990 560 930 405" class="wire-scl"/>
+  <path d="M930 405 C820 585 700 570 610 405" class="wire-scl"/>
+  <path d="M610 405 C500 580 390 560 300 435" class="wire-scl"/>
+
+  <rect x="80" y="790" width="1440" height="145" rx="18" class="note"/>
+  <text x="110" y="830" class="label">接线口诀</text>
+  <text x="110" y="865" class="small">红线：ESP32 3V3 -> 面包板 + -> OLED VCC / MPU VCC / MAX VIN</text>
+  <text x="110" y="895" class="small">黑线：ESP32 GND -> 面包板 - -> OLED GND / MPU GND / MAX GND</text>
+  <text x="710" y="865" class="small">蓝线：ESP32 GPIO21(SDA) -> 三个模块 SDA</text>
+  <text x="710" y="895" class="small">黄线：ESP32 GPIO22(SCL) -> 三个模块 SCL</text>
+  <text x="110" y="925" class="small">先不要接锂电池和 TP4056。确认接线后，再用 USB 接电脑烧录。</text>
+</svg>
